@@ -16,5 +16,7 @@ namespace AddItem
         [DynamoDBRangeKey]
         public string category { get; set; }
         public List<string> tags { get; set; }
+
+        public List<int> markets_ids { get; set; }
     }
 }

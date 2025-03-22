@@ -1,0 +1,8 @@
+{
+"market_id" : 1,
+"name": "Banana",
+"description" : "Delicous yellow fruit",
+"price" :10.99,
+"category" : "Fruit",
+"quantity" : 100
+}

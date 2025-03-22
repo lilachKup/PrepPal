@@ -4,7 +4,7 @@ namespace AddItem
 {
     public class PostItemRequest
     {
-        public string market_id { get; set; }
+        public int market_id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
         public double price { get; set; }
