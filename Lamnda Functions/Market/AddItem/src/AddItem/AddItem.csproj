@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406.6" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="openai" Version="2.1.0" />
   </ItemGroup>

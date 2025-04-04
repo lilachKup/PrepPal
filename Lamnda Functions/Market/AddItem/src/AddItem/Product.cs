@@ -1,22 +1,14 @@
 ﻿using System.Collections.Generic;
-using Amazon.DynamoDBv2.DataModel;
-
-
 namespace AddItem
 {
-    [DynamoDBTable("Items_Genaral")]
-    public class GenaralItem
+    public class Product
     {
-
-        [DynamoDBHashKey]
-        public int item_id { get; set; }
+        public int product_id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
-
-        [DynamoDBRangeKey]
         public string category { get; set; }
+        public string brand { get; set; }
         public List<string> tags { get; set; }
-
-        public List<int> markets_ids { get; set; }
+        public List<int> store_ids { get; set; }
     }
 }
