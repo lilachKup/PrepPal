@@ -1,5 +1,6 @@
 {
- "chat_id" : "123abc",
+ "chat_id" : "12328488-87ca-43e5-8979-1699e82abf47",
  "client_id" : "1",
- "message" : "Hello"
+ "message" : "Hello",
+"create_chat" : false
 }

@@ -11,17 +11,17 @@ public class Message
     public MessageSenderRole? SenderRole
     {
         get { return _sender_role; }
-        set {setImutable(_sender_role, value);}
+        set {setImutable(ref _sender_role, value);}
     }
     public string? Content 
     {
         get { return _content; }
-        set {setImutable(_content, value);}
+        set {setImutable(ref _content, value);}
     }
     public DateTime? SentAt 
     {
         get { return _createdAt; }
-        set {setImutable(_createdAt, value);}
+        set {setImutable(ref _createdAt, value);}
     }
 
     public Message()
@@ -36,7 +36,7 @@ public class Message
         SentAt = messageEntity.sent_at;
     }
     
-    private void setImutable<T>(T? oldValue,T newValue)
+    private void setImutable<T>(ref T? oldValue,T newValue)
     {
         if (oldValue != null)
         {

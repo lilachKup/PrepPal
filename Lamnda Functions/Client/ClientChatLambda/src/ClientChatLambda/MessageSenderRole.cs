@@ -4,5 +4,5 @@ public enum MessageSenderRole
 {
     NotInitilized = 0,
     Client,
-    Assistent,
+    Assistant,
 }
