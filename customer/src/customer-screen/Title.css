@@ -1,0 +1,25 @@
+.title {
+    display: flex;
+    align-items: center; /* מוודא שהתמונה והכותרת מיושרים אנכית */
+    justify-content: center; /* ממקם את הכותרת במרכז */
+    width: 100%;
+    position: relative;
+    min-width: 100%;
+    border-radius: 3px;
+    border-bottom: 1px solid black;
+    background-color: lightgray;
+
+}
+
+h1 {
+    color: purple;
+    padding-right: 10px;
+    font-size: 2rem;
+}
+
+img {
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    left: 0; /* מבטיח שהתמונה תהיה בפינה השמאלית */
+}
