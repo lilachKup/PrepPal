@@ -9,7 +9,7 @@ public class Chat
     
     public string ChatId { get; }
     public string ClientId { get; }
-    public ImmutableList<Message> Messages => _messages?.ToImmutableList() ?? ImmutableList<Message>.Empty;
+    public IEnumerable<Message> Messages => _messages?.ToImmutableList() ?? ImmutableList<Message>.Empty;
     public List<string> ProductsIds => _products_ids;
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }

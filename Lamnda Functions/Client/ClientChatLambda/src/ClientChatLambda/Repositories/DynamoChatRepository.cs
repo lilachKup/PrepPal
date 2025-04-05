@@ -48,7 +48,7 @@ public class DynamoChatRepository : IChatRepository
         return new Chat(entity);
     }
 
-    public async Task<List<Chat>> GetChatsByUserId(string client_id)
+    public async Task<List<Chat>> GetChatsByUserId(string client_id ,IComparer<Chat>? comparer = null)
     {
         if (string.IsNullOrEmpty(client_id))
         {
@@ -62,6 +62,13 @@ public class DynamoChatRepository : IChatRepository
         
         var chats = from entity in entities
                                           select new Chat(entity);
+
+        if (comparer != null)
+        {
+            chats = from chat in chats
+                        orderby comparer
+                            select chat;
+        }
         
         return chats.ToList();
     }
