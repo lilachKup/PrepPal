@@ -1,6 +1,10 @@
+using System.Net.Http.Json;
+using System.Text.Json;
 using ClientChatLambda.models;
+using OpenAI.Assistants;
 using OpenAI.Chat;
 
+#pragma warning disable OPENAI001
 namespace ClientChatLambda.AIAgents;
 
 public class OpenAIAgent :IAIAgent
@@ -9,6 +13,7 @@ public class OpenAIAgent :IAIAgent
     private readonly string _apiKey;
     
     private ChatClient _chatClient;
+    private HttpClient _repositoryClient;
     
     public Chat Chat { get; set; }
     public int LastMessageTokenCount { get; set; }
@@ -17,11 +22,60 @@ public class OpenAIAgent :IAIAgent
     public string Model { get; set; }
     public string Prompt { get; set; }
 
+    
+    private readonly List<FunctionToolDefinition> _functions = new()
+    {
+        new FunctionToolDefinition("get_product")
+        {
+            Description = "Get product information",
+            Parameters = new BinaryData(
+                new
+                {
+                    type = "object",
+                    properties = new
+                    {
+                        id = new
+                        {
+                            type = "string",
+                            description = "The product id"
+                        },
+                        name = new
+                        {
+                            type = "string",
+                            description = "The product name"
+                        },
+                        category = new
+                        {
+                            type = "string",
+                            description = "The product category"
+                        },
+                        tag = new
+                        {
+                            type = "string",
+                            description = "The product tag"
+                        },
+                        brand = new
+                        {
+                            type = "string",
+                            description = "The product brand"
+                        },
+                        price = new
+                        {
+                            type = "string",
+                            description = "The product price"
+                        },
+                    }
+                })
+        }
+    };
+
     public OpenAIAgent(string model, string apiKey)
     {
         Model = model;
         _apiKey = apiKey;
         _chatClient = new ChatClient(model , _apiKey);
+        _repositoryClient = new HttpClient();
+        _repositoryClient.BaseAddress = new Uri("https://ztbpw4dzb7.execute-api.us-east-1.amazonaws.com/prod/products/filterProductsByTags");
     }
     
     public async Task<Message> SendMessage(Message message)
@@ -100,4 +154,27 @@ public class OpenAIAgent :IAIAgent
 
         return null;
     }
+
+    private async Task<SystemChatMessage> searchProductsByTags(string[] tags)
+    {
+        var response = await _repositoryClient.PostAsJsonAsync("", new
+        {
+            tags = string.Join(',', tags),
+            store_ids = new[] { 1, 4, 3 }
+        });
+
+        List<Product> products = await response.Content.ReadFromJsonAsync<List<Product>>();
+
+        return new SystemChatMessage(
+            $"The following products were found: [" +
+            $"{string.Join(',', products.Select(p => JsonSerializer.Serialize(p)))} " +
+            $"]");
+    }
+
+    private async Task vaddProductToOrder(string[] productIds)
+    {
+        
+    }
+    
+    
 }

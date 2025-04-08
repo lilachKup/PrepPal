@@ -10,7 +10,7 @@ public interface IChatRepository
     Task<Chat> GetChat(string client_id, string chat_id);
     Task<List<Chat>> GetChatsByUserId(string client_id, IComparer<Chat>? comparer = null);
     Task SaveMessage(string client_id, string chat_id, Message message);
-    Task SaveProduct(string client_id, string chat_id, string product_id);
+    Task SaveProduct(string client_id, string chat_id, Product product);
     Task UpdateChat(Chat chat);
     Task DeleteChat(string chat_id);
 }

@@ -31,7 +31,7 @@ public class DynamoChatRepository : IChatRepository
         {
             client_id = chat.ClientId,
             chat_id = chat.ChatId,
-            products_ids = chat.ProductsIds,
+            order_products = chat.OrderProducts,
             created_at = chat.CreatedAt,
             updated_at = chat.UpdatedAt,
             messages = new List<MessageEntity>()
@@ -137,16 +137,16 @@ public class DynamoChatRepository : IChatRepository
         await _context.SaveAsync(entity);
     }
 
-    public async Task SaveProduct(string client_id, string chat_id, string product_id)
+    public async Task SaveProduct(string client_id, string chat_id, Product product)
     {
         if (string.IsNullOrEmpty(chat_id))
         {
             throw new ArgumentNullException(nameof(chat_id));
         }
         
-        if (string.IsNullOrEmpty(product_id))
+        if (product == null)
         {
-            throw new ArgumentNullException(nameof(product_id));
+            throw new ArgumentNullException(nameof(product));
         }
         
         var entity = await _context.LoadAsync<ChatEntity>(chat_id);
@@ -157,10 +157,10 @@ public class DynamoChatRepository : IChatRepository
             throw new KeyNotFoundException($"Chat with id {chat_id} not found");
         }
         
-        entity.products_ids.Add(product_id);
+        entity.order_products.Add(product);
         entity.updated_at = DateTime.UtcNow;
         
-        Logger.LogDebug($"save product with id {product_id}");
+        Logger.LogDebug($"save product with id {product}");
         
         await _context.SaveAsync(entity);
     }
@@ -182,7 +182,7 @@ public class DynamoChatRepository : IChatRepository
 
         entity.primary_messages = (from message in chat.PrimaryMessages select getMessageEntity(message)).ToList();
         
-        entity.products_ids = chat.ProductsIds;
+        entity.order_products = chat.OrderProducts;
         entity.updated_at = chat.UpdatedAt;
         
         Logger.LogDebug($"update chat with id {chat.ChatId}");
