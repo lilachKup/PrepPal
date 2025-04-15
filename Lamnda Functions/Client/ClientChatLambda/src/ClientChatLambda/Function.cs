@@ -29,20 +29,6 @@ public class Function
     /// <returns></returns>
     public async Task<Object> FunctionHandler(PostMessageRequest request, ILambdaContext context)
     {
-        _aiAgent = new OpenAIAgent(CHAT_GPT_3, OPENAI_API_KEY);
-        _aiAgent.MaxTokens = 30;
-        _aiAgent.LastMessageTokenCount = 3;
-        _aiAgent.PrimaryMessageTokenCount = 3;
-
-        using (var promptStream = File.OpenRead("MainPrompt.txt"))
-        {
-            byte[] buffer = new byte[promptStream.Length];
-            promptStream.Read(buffer);
-
-            _aiAgent.Prompt = buffer.Length > 0 ? System.Text.Encoding.UTF8.GetString(buffer) : string.Empty;
-            context.Logger.LogLine(_aiAgent.Prompt);
-        }
-        
         _chatRepository = new DynamoChatRepository();
         
         _chatRepository.Logger = context.Logger;
@@ -62,6 +48,9 @@ public class Function
                 return new { chat_id = chat.ChatId };
             }
             
+            SetAIAgent(context);
+            LoadPrompt(context);
+            
             return await ExistChatHandler(request, context);
         }
         catch (KeyNotFoundException e)
@@ -74,6 +63,27 @@ public class Function
             context.Logger.LogError($"Error: {e.Message}");
             return new { error = e.Message };
         }
+    }
+
+    private void LoadPrompt(ILambdaContext context)
+    {
+        using (var promptStream = File.OpenRead("MainPrompt.txt"))
+        {
+            byte[] buffer = new byte[promptStream.Length];
+            promptStream.Read(buffer);
+
+            _aiAgent.Prompt = buffer.Length > 0 ? System.Text.Encoding.UTF8.GetString(buffer) : string.Empty;
+            context.Logger.LogLine(_aiAgent.Prompt);
+        }
+    }
+
+    private void SetAIAgent(ILambdaContext context)
+    {
+        _aiAgent = new OpenAIAgent(CHAT_GPT_4, OPENAI_API_KEY);
+        _aiAgent.MaxTokens = 40;
+        _aiAgent.LastMessageTokenCount = 3;
+        _aiAgent.PrimaryMessageTokenCount = 3;
+        _aiAgent.Logger = context.Logger;
     }
 
     private async Task<object> ExistChatHandler(PostMessageRequest request, ILambdaContext context)
@@ -95,7 +105,7 @@ public class Function
         
         await _chatRepository.UpdateChat(chat);
 
-        return new { response = response.Content };
+        return new { message = response.Content, products = JsonSerializer.Serialize(chat.OrderProducts) };
     }
 
     private (string error, bool isValid) ValidateRequest(PostMessageRequest request)
