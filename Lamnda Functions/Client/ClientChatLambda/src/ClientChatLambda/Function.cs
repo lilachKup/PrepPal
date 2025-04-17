@@ -1,6 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.Core;
+using Amazon.S3;
+using Amazon.S3.Model;
 using ClientChatLambda.AIAgents;
 using ClientChatLambda.models;
 using ClientChatLambda.Repositories;
@@ -20,6 +23,7 @@ public class Function
 
     private IAIAgent _aiAgent;
     private IChatRepository _chatRepository;
+    private IAmazonS3 _s3Client;
     
     /// <summary>
     /// A simple function that takes a string and does a ToUpper
@@ -49,7 +53,7 @@ public class Function
             }
             
             SetAIAgent(context);
-            LoadPrompt(context);
+            await LoadPrompt(context);
             
             return await ExistChatHandler(request, context);
         }
@@ -65,16 +69,42 @@ public class Function
         }
     }
 
-    private void LoadPrompt(ILambdaContext context)
+    private async Task LoadPrompt(ILambdaContext context)
     {
-        using (var promptStream = File.OpenRead("MainPrompt.txt"))
-        {
-            byte[] buffer = new byte[promptStream.Length];
-            promptStream.Read(buffer);
+        // if (Environment.GetEnvironmentVariable("USE_S3") == "true")
+        // {
+        //     // Create a GetObject request
+        //     var request = new GetObjectRequest
+        //     {
+        //         BucketName = Environment.GetEnvironmentVariable("AWS_S3_BUCKET_NAME"),
+        //         //Key = Environment.GetEnvironmentVariable("AWS_S3_ACCESS_KEY_ID"),
+        //     };
+        //     using (var response = await _s3Client.GetObjectAsync(request))
+        //     {
+        //         using (var responseStream = response.ResponseStream)
+        //         {
+        //             using (var reader = new StreamReader(responseStream))
+        //             {
+        //                 var prompt = await reader.ReadToEndAsync();
+        //                 _aiAgent.Prompt = prompt;
+        //                 context.Logger.LogLine(prompt);
+        //             }
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     using (var promptStream = File.OpenRead("ClientChatMainPrompt.txt"))
+        //     {
+        //         byte[] buffer = new byte[promptStream.Length];
+        //         promptStream.Read(buffer);
+        //
+        //         _aiAgent.Prompt = buffer.Length > 0 ? System.Text.Encoding.UTF8.GetString(buffer) : string.Empty;
+        //         context.Logger.LogLine(_aiAgent.Prompt);
+        //     }
+        // }
 
-            _aiAgent.Prompt = buffer.Length > 0 ? System.Text.Encoding.UTF8.GetString(buffer) : string.Empty;
-            context.Logger.LogLine(_aiAgent.Prompt);
-        }
+        _aiAgent.Prompt = Prompts.DEFAULT_PROMPT;
     }
 
     private void SetAIAgent(ILambdaContext context)
