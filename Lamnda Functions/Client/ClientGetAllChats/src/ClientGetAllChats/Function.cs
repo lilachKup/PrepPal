@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using ClientChatLambda.models;
@@ -19,10 +20,23 @@ public class Function
     /// <param name="input">The event for the Lambda function handler to process.</param>
     /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
     /// <returns></returns>
-    public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+    public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        string? clientIdStr = request.QueryStringParameters?["id"];
-        if (string.IsNullOrEmpty(clientIdStr) && long.TryParse(clientIdStr, out long clientId))
+        context.Logger.LogLine($"Received request: {JsonSerializer.Serialize(request)}");
+        string? clientIdStr = null;
+
+        request.QueryStringParameters?.TryGetValue("id", out clientIdStr);
+
+        if (clientIdStr == null)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = "id query is required, please provide it, e.g. ?id=client_id(as number)"
+            };      
+        }
+
+        if (!long.TryParse(clientIdStr, out long clientId))
         {
             return new APIGatewayHttpApiV2ProxyResponse
             {
@@ -31,19 +45,49 @@ public class Function
             };
         }
 
-        string? getAll = null;
-        request.QueryStringParameters?.TryGetValue("get_all", out getAll);
-        
-        _repository = new DynamoChatRepository();
+        string? chat_id = null;
+        request.QueryStringParameters?.TryGetValue("chat_id", out chat_id);
+
+        if (_repository == null)
+        {
+            _repository = new DynamoChatRepository();
+        }
+        _repository.Logger = context.Logger;
         List<ChatEntity> chats;
 
-        if (string.IsNullOrEmpty(getAll))
+        if (chat_id == null)
         {
-            chats = await _repository.GetChatsByUserId(clientIdStr, new ChatEntityLastUpdateComparer());
+            try
+            {
+                chats = await _repository.GetChatsByUserId(clientIdStr, new ChatEntityLastUpdateComparer());
+            }
+            catch (Exception e)
+            {
+                context.Logger.LogError(e.Message);
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 404,
+                    Body = "id not found"
+                };
+            }
+            
         }
         else
         {
-            chats = await _repository.GetChatsByUserId(clientIdStr);
+            try
+            {
+                chats = new List<ChatEntity>() { await _repository.GetChat(clientIdStr, chat_id) };
+            }
+            catch (Exception e)
+            {
+                context.Logger.LogError(e.Message);
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 404,
+                    Body = "id or chat_id is invalid or not found or not match"
+                };
+            }
+            
         }
         
         return new APIGatewayHttpApiV2ProxyResponse()
@@ -51,6 +95,11 @@ public class Function
             StatusCode = 200,
             Body = JsonSerializer.Serialize(chats)
         };
+    }
+    
+    public void SetRepository(IChatRepository repository)
+    {
+        _repository = repository;
     }
     
     private class ChatEntityLastUpdateComparer : Comparer<ChatEntity>

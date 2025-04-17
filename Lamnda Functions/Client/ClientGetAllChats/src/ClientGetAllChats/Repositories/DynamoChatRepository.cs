@@ -50,7 +50,7 @@ public class DynamoChatRepository : IChatRepository
             new ScanCondition("client_id", ScanOperator.Equal, client_id)
         }).GetRemainingAsync();
         
-        Logger.LogDebug($"get chats with id {client_id}"
+        Logger?.LogDebug($"get chats with id {client_id}"
             + $" count {entities.Count}");
 
         if (comparer != null)
@@ -59,7 +59,7 @@ public class DynamoChatRepository : IChatRepository
                     orderby comparer
                     select chat).ToList();
             
-            Logger.LogDebug("sort chats by comparer");
+            Logger?.LogDebug("sort chats by comparer");
         }
 
         return entities;
