@@ -1,6 +1,5 @@
 using Amazon.Lambda.APIGatewayEvents;
 using Xunit;
-using Amazon.Lambda.Core;
 using Amazon.Lambda.TestUtilities;
 using ClientChatLambda.models;
 using ClientChatLambda.Repositories;
@@ -33,7 +32,7 @@ public class FunctionTest
     {
         var function = new Function();
         var context = new TestLambdaContext();
-        var request = new APIGatewayProxyRequest
+        var request = new APIGatewayHttpApiV2ProxyRequest
         {
             QueryStringParameters = new Dictionary<string, string>
             {

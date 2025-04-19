@@ -183,6 +183,7 @@ public class DynamoChatRepository : IChatRepository
         entity.primary_messages = (from message in chat.PrimaryMessages select getMessageEntity(message)).ToList();
         
         entity.order_products = chat.OrderProducts;
+        entity.products_to_serch = chat.ProductsToSearch;
         entity.updated_at = chat.UpdatedAt;
         
         Logger.LogDebug($"update chat with id {chat.ChatId}");

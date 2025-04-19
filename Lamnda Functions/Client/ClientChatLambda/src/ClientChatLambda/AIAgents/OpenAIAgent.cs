@@ -275,6 +275,7 @@ public class OpenAIAgent :IAIAgent
             select new ProductChatGptDto()
             {
                 Product_id = product.Id,
+                Product_name = product.Name,
                 Store_id = product.Store_id,
                 Quantity = product.Quantity
             }).ToList();
@@ -313,13 +314,34 @@ public class OpenAIAgent :IAIAgent
         Logger?.LogDebug($"Searching products by tags: " +
                          $"{string.Join(',', tags)}");
         
-        var response = await _repositoryClient.PostAsJsonAsync("", new
-        {
-            tags = string.Join(',', tags),
-            store_ids = new[] { 1, 4, 3 }
-        });
+        bool failed = true;
 
-        _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
+        for (int i = 0; i < 3 && failed; ++i)
+        {
+            try
+            {
+                var response = await _repositoryClient.PostAsJsonAsync("", new
+                {
+                    tags = string.Join(',', tags),
+                    store_ids = new[] { 1, 4, 3 }
+                });
+        
+                _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
+                Chat.ProductsToSearch.AddRange(_products_srearch);
+                
+                failed = false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        if (failed)
+        {
+            Logger?.LogError("Failed to search products by tags");
+            throw new Exception("Failed to search products by tags");
+        }
         
         Logger?.LogDebug($"Products found: " +
                          $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
@@ -334,6 +356,8 @@ public class OpenAIAgent :IAIAgent
     {
         Logger?.LogDebug($"Adding products to order: " +
                          $"{string.Join(',', products.Select(p => JsonSerializer.Serialize(p)))}");
+        
+        _products_srearch = Chat.ProductsToSearch;
         
         var products_to_add = from product in products
             let product_id = product.Product_id

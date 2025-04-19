@@ -7,6 +7,7 @@ public class Chat
     private List<Product> _orderProducts;
     private List<Message> _messages;
     private List<Message> _primary_messages;
+    private List<Product> _products_to_search;
     
     public string ChatId { get; }
     public string ClientId { get; }
@@ -14,6 +15,7 @@ public class Chat
     public IEnumerable<Message> PrimaryMessages => _primary_messages?.ToImmutableList() ?? ImmutableList<Message>.Empty;
     
     public List<Product> OrderProducts => _orderProducts;
+    public List<Product> ProductsToSearch => _products_to_search;
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -25,6 +27,7 @@ public class Chat
         _messages = new List<Message>();
         CreatedAt = DateTime.Now;
         UpdatedAt = DateTime.Now;
+        _products_to_search = new List<Product>();
     }
 
     public Chat(ChatEntity chatEntity)
@@ -34,6 +37,7 @@ public class Chat
         _orderProducts = chatEntity.order_products;
         _messages = (from message in chatEntity.messages select new Message(message)).ToList();
         _primary_messages = (from message in chatEntity.primary_messages select new Message(message)).ToList();
+        _products_to_search = chatEntity.products_to_serch;
         CreatedAt = chatEntity.created_at;
         UpdatedAt = chatEntity.updated_at;
     }

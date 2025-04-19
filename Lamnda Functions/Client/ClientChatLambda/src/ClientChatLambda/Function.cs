@@ -110,7 +110,7 @@ public class Function
     private void SetAIAgent(ILambdaContext context)
     {
         _aiAgent = new OpenAIAgent(CHAT_GPT_4, OPENAI_API_KEY);
-        _aiAgent.MaxTokens = 40;
+        _aiAgent.MaxTokens = 50;
         _aiAgent.LastMessageTokenCount = 3;
         _aiAgent.PrimaryMessageTokenCount = 3;
         _aiAgent.Logger = context.Logger;
@@ -162,4 +162,14 @@ public class Function
 
         return (null, true);
     }
+    
+    /*TODO:
+     * Create chat resoning flow
+     * Add number of products at same time
+     * Add update products
+     * Add delete products
+     * Add search product cache
+     * put the prompt in S3
+     * write tests
+     */
 }
