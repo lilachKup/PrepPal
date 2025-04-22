@@ -17,7 +17,7 @@ namespace ClientChatLambda;
 public class Function
 {
     private readonly string CHAT_GPT_3 = "gpt-3.5-turbo";
-    private readonly string CHAT_GPT_4 = "gpt-4-turbo";
+    private readonly string CHAT_GPT_4 = "gpt-4o-mini";
     private readonly string OPENAI_API_KEY = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
 
@@ -110,7 +110,7 @@ public class Function
     private void SetAIAgent(ILambdaContext context)
     {
         _aiAgent = new OpenAIAgent(CHAT_GPT_4, OPENAI_API_KEY);
-        _aiAgent.MaxTokens = 50;
+        _aiAgent.MaxTokens = 150;
         _aiAgent.LastMessageTokenCount = 3;
         _aiAgent.PrimaryMessageTokenCount = 3;
         _aiAgent.Logger = context.Logger;
@@ -164,8 +164,8 @@ public class Function
     }
     
     /*TODO:
-     * Create chat resoning flow
-     * Add number of products at same time
+     * Create chat reasoning flow
+     * Add number of products at same time V
      * Add update products
      * Add delete products
      * Add search product cache

@@ -29,7 +29,7 @@ RULES
   – If unclear or very large, ask for confirmation.
 • If search returns no products, apologise and suggest alternatives.
 • Keep messages short, polite, and free of JSON or internal details.
-• Pay attention you have only 50 tokens to respond.
+• Pay attention you have only 150 tokens to respond.
 
 EXAMPLES
 
