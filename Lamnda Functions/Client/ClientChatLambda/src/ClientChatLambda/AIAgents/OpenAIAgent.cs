@@ -54,13 +54,13 @@ public class OpenAIAgent :IAIAgent
                 "properties": {
                     "products": {
                         "type": "array",
-                        "description": "List of products to add to the order.",
+                        "description": "List of products to add to the order. when P_id is Product_id, S_id is Store_id and Q is Quantity",
                         "items": {
                             "type": "object",
                             "properties": {
-                                "Product_id": { "type": "integer" },
-                                "Store_id": { "type": "integer" },
-                                "Quantity": { "type": "integer" }
+                                "P_id": { "type": "integer" },
+                                "S_id": { "type": "integer" },
+                                "Q": { "type": "integer" }
                             },
                             "required": ["Product_id", "Store_id", "Quantity"]
                         }
@@ -159,10 +159,10 @@ public class OpenAIAgent :IAIAgent
                 foreach (var call in chatResponse.Value.ToolCalls)
                 {
                     Logger?.LogInformation($"{call.FunctionName} has called with arguments: {call.FunctionArguments}");
-                    var functionResponse = await functionCallHandler(chatResponse.Value.ToolCalls[0]);
-                    messages.Add(functionResponse);
+                    var functionResponse = await functionCallHandler(call);
+                    messages.Add(new ToolChatMessage(call.Id, "Functions executed"));
                 }
-
+                
                 isNeedToReact = true;
             }
             
@@ -305,10 +305,10 @@ public class OpenAIAgent :IAIAgent
         var products = (from product in Chat.OrderProducts
             select new ProductChatGptDto()
             {
-                Product_id = product.Id,
+                P_id = product.Id,
                 Product_name = product.Name,
-                Store_id = product.Store_id,
-                Quantity = product.Quantity
+                S_id = product.Store_id,
+                Q = product.Quantity
             }).ToList();
         
         var message = new SystemChatMessage(
@@ -391,14 +391,14 @@ public class OpenAIAgent :IAIAgent
         _products_srearch = Chat.ProductsToSearch;
         
         var products_to_add = from product in products
-            let product_id = product.Product_id
-            let store_id = product.Store_id
+            let product_id = product.P_id
+            let store_id = product.S_id
             where _products_srearch.Any(p => p.Id == product_id && p.Store_id == store_id)
             select  _products_srearch.First(p => p.Id == product_id && p.Store_id == store_id);
 
         foreach (var product in products_to_add)
         {
-            var quantity = products.First(p => p.Product_id == product.Id && p.Store_id == product.Store_id)?.Quantity;
+            var quantity = products.First(p => p.P_id == product.Id && p.S_id == product.Store_id)?.Q;
             
             if (quantity == null)
             {
