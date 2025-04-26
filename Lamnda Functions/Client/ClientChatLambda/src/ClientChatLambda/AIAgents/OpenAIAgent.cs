@@ -27,10 +27,6 @@ public class OpenAIAgent :IAIAgent
     
     public ILambdaLogger? Logger { get; set; }
     
-    //TODO: 
-    // 1.Add a function to update the order
-    // 2.Add a function to remove a product from the order
-    
     private static readonly ChatTool search_products_by_tags = ChatTool.CreateFunctionTool(
         functionName: "search_products_by_tags",
         functionDescription: "Search for products related to the user request using a list of relevant tags.",
@@ -96,12 +92,39 @@ public class OpenAIAgent :IAIAgent
                                                      }
                                                  """u8.ToArray())
     );
+    
+    private static readonly ChatTool update_products_quantity_in_order = ChatTool.CreateFunctionTool(
+        functionName: "update_products_quantity_in_order",
+        functionDescription: "Update the quantity of products in the user's order.",
+        functionParameters: BinaryData.FromBytes("""
+            {
+                "type": "object",
+                "properties": {
+                    "products": {
+                        "type": "array",
+                        "description": "List of products to update in the order.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "Id": { "type": "integer" },
+                                "StoreId": { "type": "integer" },
+                                "NewQuantity": { "type": "integer" }
+                            },
+                            "required": ["Id", "StoreId", "NewQuantity"]
+                        }
+                    }
+                },
+                "required": ["products"]
+            }
+        """u8.ToArray())
+    );
 
     private readonly ChatTool[] _functions =
     {
         search_products_by_tags,
         add_products_to_order,
-        mark_message_as_primary
+        mark_message_as_primary,
+        update_products_quantity_in_order
     };
     
 
@@ -121,23 +144,25 @@ public class OpenAIAgent :IAIAgent
         Chat.AddMessage(message);
 
         byte functionCallCount = 0;
-        var messages = SetChatMessages();
+        var messages = getChatMessages();
         do
         {
             isNeedToReact = false;
             
             messages.Add(getProductsInOrderToChatGpt());
-            var options = SetOptions();
+            var options = getOptions();
             chatResponse = await _chatClient.CompleteChatAsync(messages, options);
 
             if (chatResponse.Value.ToolCalls != null && chatResponse.Value.ToolCalls.Count > 0)
             {
-                Logger?.LogDebug(chatResponse.Value.ToolCalls[0].FunctionName);
-                
                 messages.Add(new AssistantChatMessage(chatResponse));
-                var functionResponse = await functionCallHandler(chatResponse.Value.ToolCalls[0]);
-                messages.Add(functionResponse);
-                
+                foreach (var call in chatResponse.Value.ToolCalls)
+                {
+                    Logger?.LogInformation($"{call.FunctionName} has called with arguments: {call.FunctionArguments}");
+                    var functionResponse = await functionCallHandler(chatResponse.Value.ToolCalls[0]);
+                    messages.Add(functionResponse);
+                }
+
                 isNeedToReact = true;
             }
             
@@ -162,7 +187,7 @@ public class OpenAIAgent :IAIAgent
         return assistantMessage;
     }
 
-    private List<ChatMessage> SetChatMessages()
+    private List<ChatMessage> getChatMessages()
     {
         var messages = new List<ChatMessage>();
         messages.Add(new SystemChatMessage(Prompt));
@@ -171,7 +196,7 @@ public class OpenAIAgent :IAIAgent
         return messages;
     }
 
-    private ChatCompletionOptions SetOptions()
+    private ChatCompletionOptions getOptions()
     {
         ChatCompletionOptions options = new ChatCompletionOptions();
         options.MaxOutputTokenCount = MaxTokens;
@@ -219,12 +244,18 @@ public class OpenAIAgent :IAIAgent
             toolMessage.Content = functionCall.Id + "#" + "Message marked as primary";
         }
 
+        else if (functionName == update_products_quantity_in_order.FunctionName)
+        {
+            var args = JsonSerializer.Deserialize<Dictionary<string, List<UpdateProductGPT>>>(arguments);
+            updateProductsQuantityInOrder(args["products"]);
+            toolMessage.Content = functionCall.Id + "#" + "Products quantity updated";
+        }
+
         else
         {
             throw new Exception($"Unknown function: {functionCall.FunctionName}");
         }
-                
-        //Chat.AddMessage(toolMessage);
+
         return MessageToChatMessage(toolMessage);
     }
     
@@ -311,8 +342,8 @@ public class OpenAIAgent :IAIAgent
     private async Task<SystemChatMessage> searchProductsByTags(string[] tags)
     {
         
-        Logger?.LogDebug($"Searching products by tags: " +
-                         $"{string.Join(',', tags)}");
+        Logger?.LogInformation($"Searching products by tags: " +
+                               $"{string.Join(',', tags)}");
         
         bool failed = true;
 
@@ -343,8 +374,8 @@ public class OpenAIAgent :IAIAgent
             throw new Exception("Failed to search products by tags");
         }
         
-        Logger?.LogDebug($"Products found: " +
-                         $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
+        Logger?.LogInformation($"Products found: " +
+                               $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
 
         return new SystemChatMessage(
             $"The following products were found: [" +
@@ -354,7 +385,7 @@ public class OpenAIAgent :IAIAgent
 
     private async Task addProductsToOrder(ProductChatGptDto[] products)
     {
-        Logger?.LogDebug($"Adding products to order: " +
+        Logger?.LogInformation($"Adding products to order: " +
                          $"{string.Join(',', products.Select(p => JsonSerializer.Serialize(p)))}");
         
         _products_srearch = Chat.ProductsToSearch;
@@ -388,7 +419,7 @@ public class OpenAIAgent :IAIAgent
                 
             Chat.OrderProducts.Add(product_to_add);
             
-            Logger?.LogDebug($"Product {product.Name} added to order");
+            Logger?.LogInformation($"Product {product.Name} added to order");
         }
         
     }
@@ -397,6 +428,29 @@ public class OpenAIAgent :IAIAgent
     {
         Chat.AddPrimaryMessage(message);
         
-        Logger?.LogDebug($"{message.Content} is marked as primary");;
+        Logger?.LogInformation($"{message.Content} is marked as primary");;
+    }
+
+    private void updateProductsQuantityInOrder(List<UpdateProductGPT> updateProduct)
+    {
+        List<Product> productsToRemove = new List<Product>();
+        
+        foreach (var product in updateProduct)
+        {
+            var productToUpdate = Chat.OrderProducts.FirstOrDefault(p => p.Id == product.Id && p.Store_id == product.StoreId);
+            if (productToUpdate != null)
+            {
+                productToUpdate.Quantity = product.NewQuantity;
+                Logger?.LogInformation($"Product {productToUpdate.Name} updated to {product.NewQuantity}");
+                
+                if(productToUpdate.Quantity == 0)
+                    productsToRemove.Add(productToUpdate);
+            }
+        }
+
+        foreach (var product in productsToRemove)
+        {
+            Chat.OrderProducts.Remove(product);
+        }
     }
 }

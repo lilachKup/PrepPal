@@ -124,8 +124,6 @@ public class Function
         message.SenderRole = MessageSenderRole.Client;
         message.Content = request.message;
         message.SentAt = DateTime.Now;
-        
-        chat.AddMessage(message);
             
         context.Logger.LogInformation($"Message {request.message} added to chat {request.chat_id}");
 
@@ -166,8 +164,8 @@ public class Function
     /*TODO:
      * Create chat reasoning flow
      * Add number of products at same time V
-     * Add update products
-     * Add delete products
+     * Add update products V
+     * Add delete products V
      * Add search product cache
      * put the prompt in S3
      * write tests
