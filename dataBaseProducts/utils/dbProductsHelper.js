@@ -78,6 +78,25 @@ const getProductWithoutStore = async (product_id) => {
     }
 };
 
+const deleteProductFromStore = async (product_id, store_id) => {
+    const result = await db.query(
+        'DELETE FROM product_store WHERE product_id = $1 AND store_id = $2 RETURNING *',
+        [product_id, store_id]
+    );
+    return result.rows[0];
+};
+
+
+const getProductsByStore = async (store_id) => {
+    const result = await db.query(
+        `SELECT p.id, p.name, p.category, p.description, p.tag, p.brand, ps.price, ps.quantity, ps.image_url
+        FROM product_store ps
+        JOIN products p ON ps.product_id = p.id
+        WHERE ps.store_id = $1`, 
+        [store_id]
+    );
+    return result.rows;
+}
 
 
 module.exports = {
@@ -88,5 +107,7 @@ module.exports = {
     addProductToStore,
     updateProductPrice,
     getProductInStore,
-    getProductWithoutStore
+    getProductWithoutStore,
+    deleteProductFromStore,
+    getProductsByStore
 };

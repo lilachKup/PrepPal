@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const {checkIfStoreExists, getStoreById} = require('../utils/dbStoreHelpers');
 const {checkIfProductExists, createProduct, checkIfProductExistsInStore, addProductToStore,
-    updateProductQuantity, updateProductPrice, getProductInStore, getProductWithoutStore} = require('../utils/dbProductsHelper');
+    updateProductQuantity, updateProductPrice, getProductInStore, getProductWithoutStore, getProductsByStore} = require('../utils/dbProductsHelper');
 
 
 //add product to store
@@ -180,4 +180,55 @@ router.get('/getProductInhStore', async (req, res) => {
     }
 });
 
+
+// Get all products for a specific store
+
+router.get('/getProductsByStore/:store_id', async (req, res) => {
+    const { store_id } = req.params;
+  
+    try {
+        const result = getProductsByStore(store_id);
+        
+  
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No products found for this store' });
+        }
+  
+        res.status(200).json(result.rows);
+  
+    } catch (err) {
+        console.error('Error fetching products by store:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+  });
+  
+  ///delete product from store
+  router.delete('/deleteProductFromStore', async (req, res) => {
+    const { store_id, product_id } = req.body;
+  
+    try {
+        const productInStore = await getProductInStore(product_id, store_id);
+        
+        if (!productInStore) {
+            return res.status(404).json({ error: 'Product not found in store' });
+        }
+  
+        const result = deleteProductFromStore(product_id, store_id);
+  
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: 'Failed to delete product from store' });
+        }
+  
+        res.status(200).json({
+            message: 'Product successfully deleted from store',
+            product: result.rows[0]
+        });
+  
+    } catch (err) {
+        console.error('Error deleting product from store:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+  });
+
 module.exports = router;
+
