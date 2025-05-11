@@ -168,7 +168,7 @@ public class OpenAIAgent :IAIAgent
             
             functionCallCount++;
             
-        } while (isNeedToReact && functionCallCount < 3);
+        } while (isNeedToReact && functionCallCount < 3); // run function calls and limit to 3 times
 
         if (isNeedToReact)
         {
