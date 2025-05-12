@@ -9,10 +9,12 @@ namespace StoresFinderByRadius;
 public class Function
 {
     private readonly IStoreProvider _storeProvider;
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("ConnectionString") ?? string.Empty;
+    private readonly string _query = Environment.GetEnvironmentVariable("Query") ?? string.Empty;
     
     public Function()
     {
-        _storeProvider = new StoreProvider();
+        _storeProvider = new SqlStoreProvider(_connectionString, _query);
     }
     
     /// <summary>
@@ -60,7 +62,7 @@ public class Function
         
         try
         {
-            storeIds = await _storeProvider.GetStoreIdsByCoordinates(latitude, longitude, radius);
+            storeIds = await _storeProvider.GetStoreIdsByCoordinatesAsync(latitude, longitude, radius);
         }
         catch (Exception e)
         {

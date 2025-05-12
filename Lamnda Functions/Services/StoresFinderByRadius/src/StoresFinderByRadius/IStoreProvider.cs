@@ -2,5 +2,5 @@ namespace StoresFinderByRadius;
 
 public interface IStoreProvider
 {
-    Task<List<string>> GetStoreIdsByCoordinates(double latitude, double longitude, double radius);
+    Task<List<string>> GetStoreIdsByCoordinatesAsync(double latitude, double longitude, double radius);
 }

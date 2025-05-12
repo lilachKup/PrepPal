@@ -3,19 +3,21 @@ using Npgsql;
 
 namespace StoresFinderByRadius;
 
-public class StoreProvider :IStoreProvider
+public class SqlStoreProvider :IStoreProvider
 {
     private IStoreProvider? _decorator;
-    private readonly string _connectionString = Environment.GetEnvironmentVariable("ConnectionString") ?? string.Empty;
-    private readonly string _query = Environment.GetEnvironmentVariable("Query") ?? string.Empty;
+    private readonly string _connectionString;
+    private readonly string _query;
     private GeoCoordinate coordinate;
     
-    public StoreProvider(IStoreProvider decorator = null)
+    public SqlStoreProvider(string connectionString, string query,IStoreProvider decorator = null)
     {
         _decorator = decorator;
+        _query = query;
+        _connectionString = connectionString;
     }
     
-    public async Task<List<string>> GetStoreIdsByCoordinates(double latitude, double longitude, double radius)
+    public async Task<List<string>> GetStoreIdsByCoordinatesAsync(double latitude, double longitude, double radius)
     {   
          coordinate = new GeoCoordinatePortable.GeoCoordinate(latitude, longitude);
         
@@ -45,6 +47,15 @@ public class StoreProvider :IStoreProvider
             {
                 storeIds.Add(storeId);
             }
+        }
+        
+        await reader.CloseAsync();
+        await conn.CloseAsync();
+        
+        if (_decorator != null)
+        {
+            var decoratorStoreIds = await _decorator.GetStoreIdsByCoordinatesAsync(coordinate.Latitude, coordinate.Longitude, radius);
+            storeIds.AddRange(decoratorStoreIds);
         }
 
         return storeIds;
