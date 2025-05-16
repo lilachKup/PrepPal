@@ -11,7 +11,13 @@ namespace AddressLocation;
 public class Function
 {
     
-    HttpClient _client = new HttpClient();
+    private readonly HttpClient _client = new HttpClient();
+    private readonly Dictionary<string, string> _headers = new Dictionary<string, string>
+    {
+        { "Content-Type", "application/json" },
+        { "Access-Control-Allow-Origin", "*" },     // or "http://localhost:3000"  
+        { "Access-Control-Allow-Credentials", "true" } // if you ever need cookies/auth
+    };
     
     /// <summary>
     /// A simple function that takes a string and does a ToUpper
@@ -34,10 +40,7 @@ public class Function
             {
                 StatusCode = 400,
                 Body = JsonSerializer.Serialize(new { error = "Address is required" }),
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                }
+                Headers = _headers
             };
         }
         
@@ -62,10 +65,7 @@ public class Function
             {
                 StatusCode = (int)location.StatusCode,
                 Body = JsonSerializer.Serialize(new { error = "Failed to get location" }),
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                }
+                Headers = _headers
             };
         }
 
@@ -86,22 +86,15 @@ public class Function
             {
                 StatusCode = 500,
                 Body = JsonSerializer.Serialize(new { error = "Failed to parse location response" }),
-                Headers = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/json" }
-                }
+                Headers = _headers
             };
         }
-
         
         return new APIGatewayProxyResponse
         {
             StatusCode = 200,
             Body = JsonSerializer.Serialize(new LatLon { lat = locationObject.lat, lon = locationObject.lon }),
-            Headers = new Dictionary<string, string>
-            {
-                { "Content-Type", "application/json" }
-            }
+            Headers = _headers
         };
     }
 }

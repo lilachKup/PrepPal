@@ -12,6 +12,13 @@ public class Function
     private readonly string _connectionString = Environment.GetEnvironmentVariable("ConnectionString") ?? string.Empty;
     private readonly string _query = Environment.GetEnvironmentVariable("Query") ?? string.Empty;
     
+    private readonly Dictionary<string, string> headers = new Dictionary<string, string>
+    {
+        { "Content-Type", "application/json" },
+        { "Access-Control-Allow-Origin", "*" },     // or "http://localhost:3000"  
+        { "Access-Control-Allow-Credentials", "true" } // if you ever need cookies/auth
+    };
+    
     public Function()
     {
         _storeProvider = new SqlStoreProvider(_connectionString, _query);
@@ -40,7 +47,8 @@ public class Function
             return new APIGatewayProxyResponse
             {
                 StatusCode = 400,
-                Body = "Invalid radius value"
+                Body = "Invalid radius value",
+                Headers = headers
             };
         }
         
@@ -54,7 +62,8 @@ public class Function
             return new APIGatewayProxyResponse
             {
                 StatusCode = 400,
-                Body = "Invalid coordinates value"
+                Body = "Invalid coordinates value",
+                Headers = headers
             };
         }
 
@@ -71,7 +80,8 @@ public class Function
             return new APIGatewayProxyResponse
             {
                 StatusCode = 500,
-                Body = "Internal server error"
+                Body = "Internal server error",
+                Headers = headers
             };
         }
         
@@ -82,14 +92,16 @@ public class Function
             return new APIGatewayProxyResponse
             {
                 StatusCode = 404,
-                Body = "No stores found"
+                Body = "No stores found",
+                Headers = headers
             };
         }
         
         return new APIGatewayProxyResponse
         {
             StatusCode = 200,
-            Body = string.Join(",", storeIds)
+            Body = string.Join(",", storeIds),
+            Headers = headers
         };
     }
 }
