@@ -10,6 +10,5 @@ public class Product
     public string? Price { get; set; }
     public int? Quantity { get; set; }
     public long? Store_id { get; set; }
-    
     public int entity_version { get; set; } = 1; // version for optimistic concurrency control
 }

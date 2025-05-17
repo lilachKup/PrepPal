@@ -1,4 +1,3 @@
-using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 
 namespace ClientChatLambda.models;
@@ -16,6 +15,5 @@ public class ChatEntity
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
     public List<MessageEntity> primary_messages { get; set; } = new List<MessageEntity>();
-    
     public int entity_version { get; set; } = 1;
 }
