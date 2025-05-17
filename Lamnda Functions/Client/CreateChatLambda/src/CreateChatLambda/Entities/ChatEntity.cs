@@ -16,4 +16,10 @@ public class ChatEntity
     public DateTime updated_at { get; set; }
     public List<MessageEntity> primary_messages { get; set; } = new List<MessageEntity>();
     public int entity_version { get; set; } = 1;
+
+    public ChatEntity()
+    {
+        created_at = DateTime.UtcNow;
+        updated_at = created_at;
+    }
 }
