@@ -58,11 +58,11 @@ public class OpenAIAgent :IAIAgent
                         "items": {
                             "type": "object",
                             "properties": {
-                                "P_id": { "type": "integer" },
-                                "S_id": { "type": "integer" },
+                                "P_id": { "type": "string" },
+                                "S_id": { "type": "string" },
                                 "Q": { "type": "integer" }
                             },
-                            "required": ["Product_id", "Store_id", "Quantity"]
+                            "required": ["P_id", "S_id", "Q"]
                         }
                     }
                 },
@@ -106,8 +106,8 @@ public class OpenAIAgent :IAIAgent
                         "items": {
                             "type": "object",
                             "properties": {
-                                "Id": { "type": "integer" },
-                                "StoreId": { "type": "integer" },
+                                "Id": { "type": "string" },
+                                "StoreId": { "type": "string" },
                                 "NewQuantity": { "type": "integer" }
                             },
                             "required": ["Id", "StoreId", "NewQuantity"]
@@ -134,7 +134,7 @@ public class OpenAIAgent :IAIAgent
         _apiKey = apiKey;
         _chatClient = new ChatClient(model , _apiKey);
         _repositoryClient = new HttpClient();
-        _repositoryClient.BaseAddress = new Uri("https://ztbpw4dzb7.execute-api.us-east-1.amazonaws.com/prod/products/filterProductsByTags");
+        _repositoryClient.BaseAddress = new Uri("https://xgpbt0u4ql.execute-api.us-east-1.amazonaws.com/prod/getProductsFromStoreByTags");
     }
     
     public async Task<Message> SendMessage(Message message)
@@ -160,7 +160,8 @@ public class OpenAIAgent :IAIAgent
                 {
                     Logger?.LogInformation($"{call.FunctionName} has called with arguments: {call.FunctionArguments}");
                     var functionResponse = await functionCallHandler(call);
-                    messages.Add(new ToolChatMessage(call.Id, "Functions executed"));
+                    //messages.Add(new ToolChatMessage(call.Id, "Functions executed"));
+                    messages.Add(functionResponse);
                 }
                 
                 isNeedToReact = true;
@@ -200,7 +201,7 @@ public class OpenAIAgent :IAIAgent
     {
         ChatCompletionOptions options = new ChatCompletionOptions();
         options.MaxOutputTokenCount = MaxTokens;
-        options.Temperature = 0.7f;
+        options.Temperature = 0.3f;
             
         // Add the function tools to the options use auto to call the function
         options.ToolChoice = ChatToolChoice.CreateAutoChoice();
@@ -353,9 +354,11 @@ public class OpenAIAgent :IAIAgent
             {
                 var response = await _repositoryClient.PostAsJsonAsync("", new
                 {
-                    tags = string.Join(',', tags),
-                    store_ids = new[] { 1, 4, 3 }
+                    tags = tags,
+                    store_ids = new[] { "24682478-3021-70bf-41e1-a3ee28bb3db7" }
                 });
+                
+                Logger?.LogInformation(await response.Content.ReadAsStringAsync());
         
                 _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
                 Chat.ProductsToSearch.AddRange(_products_srearch);

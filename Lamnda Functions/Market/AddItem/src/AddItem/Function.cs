@@ -9,7 +9,7 @@ namespace AddItem
     public class Function
     {
         private readonly string CHAT_GPT_3 = "gpt-3.5-turbo";
-        private readonly string CHAT_GPT_4 = "gpt-4-turbo";
+        private readonly string CHAT_GPT_4 = "gpt-4o-mini";
         private string OPENAI_API_KEY;
         
         private ChatClient _chatClient;
@@ -31,6 +31,8 @@ namespace AddItem
             OPENAI_API_KEY = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             
             var tags = await getItemTags(product);
+
+            context.Logger.LogLine($"tags: {string.Join(", ", tags)}");
 
             var newProduct = await _repository.CreateProduct(product, tags);
 
@@ -58,6 +60,8 @@ namespace AddItem
 
             var chatMessage = new AssistantChatMessage(response);
             var tags = chatMessage.Content[0].Text.Split(",").ToList();
+            
+            
 
             return tags;
         }

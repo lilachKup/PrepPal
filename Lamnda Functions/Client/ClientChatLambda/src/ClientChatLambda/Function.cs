@@ -160,14 +160,4 @@ public class Function
 
         return (null, true);
     }
-    
-    /*TODO:
-     * Create chat reasoning flow
-     * Add number of products at same time V
-     * Add update products V
-     * Add delete products V
-     * Add search product cache
-     * put the prompt in S3
-     * write tests
-     */
 }

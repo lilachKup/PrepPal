@@ -3,7 +3,7 @@ namespace AddItem
 {
     public class Product
     {
-        public int product_id { get; set; }
+        public string product_id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
         public string category { get; set; }
