@@ -17,5 +17,6 @@ public class ChatEntity
     public DateTime updated_at { get; set; }
     public List<MessageEntity> primary_messages { get; set; } = new List<MessageEntity>();
     
-    public int entity_version { get; set; } = 1;
+    public double latitude { get; set; }
+    public double longitude { get; set; }
 }

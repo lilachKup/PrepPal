@@ -1,4 +1,11 @@
-﻿namespace ClientChatAPI;
+﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.Lambda.Core;
+using ClientChatAPI.Repositories;
+using ClientChatAPI.Services;
+using ClientChatLambda.models;
+
+namespace ClientChatAPI;
 
 public class Startup
 {
@@ -12,6 +19,10 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<IWriteRepository<Chat>>( (provider) => new DynamoChatRepository(new DynamoDBContext(new AmazonDynamoDBClient())));
+        services.AddScoped<ILambdaLogger>(provider => LambdaEntryPoint.LambdaContext.Logger);
+        
         services.AddControllers();
         
         services.AddCors(options =>

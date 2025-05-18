@@ -1,3 +1,6 @@
+using Amazon.Lambda.APIGatewayEvents;
+using Amazon.Lambda.Core;
+
 namespace ClientChatAPI;
 
 /// <summary>
@@ -28,7 +31,20 @@ public class LambdaEntryPoint :
     protected override void Init(IWebHostBuilder builder)
     {
         builder
-            .UseStartup<Startup>();
+            .UseStartup<Startup>()
+            .ConfigureLogging((context, logging) =>
+                {
+                    // clear default providers if you like:
+                    logging.ClearProviders();
+                    // add the Lambda logger:
+                    logging.AddLambdaLogger(new LambdaLoggerOptions
+                    {
+                        IncludeCategory = true,
+                        IncludeLogLevel = true,
+                        IncludeNewline = true
+                    });
+                }
+            );
     }
 
     /// <summary>
@@ -40,5 +56,12 @@ public class LambdaEntryPoint :
     /// <param name="builder">The IHostBuilder to configure.</param>
     protected override void Init(IHostBuilder builder)
     {
+    }
+
+    public static ILambdaContext LambdaContext { get; set; }
+    public override Task<APIGatewayProxyResponse> FunctionHandlerAsync(APIGatewayProxyRequest request, ILambdaContext lambdaContext)
+    {
+        LambdaContext = lambdaContext;
+        return base.FunctionHandlerAsync(request, lambdaContext);
     }
 }

@@ -9,7 +9,7 @@ public class Chat
     private List<Message> _primary_messages;
     private List<Product> _products_to_search;
     
-    public string ChatId { get; }
+    public string ChatId { get; set; }
     public string ClientId { get; }
     public IEnumerable<Message> Messages => _messages?.ToImmutableList() ?? ImmutableList<Message>.Empty;
     public IEnumerable<Message> PrimaryMessages => _primary_messages?.ToImmutableList() ?? ImmutableList<Message>.Empty;
@@ -18,6 +18,9 @@ public class Chat
     public List<Product> ProductsToSearch => _products_to_search;
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
+    
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
 
     public Chat(string client_id)
     {
@@ -40,6 +43,8 @@ public class Chat
         _products_to_search = chatEntity.products_to_serch;
         CreatedAt = chatEntity.created_at;
         UpdatedAt = chatEntity.updated_at;
+        Latitude = chatEntity.latitude;
+        Longitude = chatEntity.longitude;
     }
 
     public void AddMessage(Message message)
