@@ -40,4 +40,43 @@ public class ChatController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    [HttpPost]
+    public async Task<IActionResult> RecieveMessage([FromBody] RecieveMessageRequest request)
+    {
+        if (string.IsNullOrEmpty(request.chat_id) || string.IsNullOrEmpty(request.message))
+        {
+            return BadRequest("Invalid request");
+        }
+        
+        _logger?.LogInformation($"Recieving message for chat {request.chat_id}: {request.message}");
+        
+        try
+        {
+            // Check if the chat belongs to the client
+            if(!await _chatService.CheckChatClient(request.chat_id, request.client_id))
+            {
+                _logger?.LogWarning($"Chat {request.chat_id} does not belong to client {request.client_id}");
+                return Unauthorized("Chat does not belong to client");
+            }
+            
+            // Process the message
+            var response = await _chatService.ReceiveMessage(request.chat_id, request.message);
+            _logger?.LogInformation($"Message received for chat {request.chat_id}");
+            
+            return Ok(new {message = response.response, cart = response.cart});
+        }
+        catch (KeyNotFoundException e)
+        {
+            _logger?.LogError($"Chat with id {request.chat_id} not found: {e.Message}");
+            return NotFound($"Chat with id {request.chat_id} not found");
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError($"Error receiving message: {e.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+        
+        return Ok();
+    }
 }

@@ -6,7 +6,7 @@ namespace ClientChatAPI.Services;
 
 public class ChatService : IChatService
 {
-    private readonly IWriteRepository<Chat> _writeRepository;
+    private readonly IRepository<string,Chat> _chatRep;
     private ILambdaLogger? _logger;
 
     private readonly HttpClient _getCoordinatesClient = new();
@@ -17,13 +17,13 @@ public class ChatService : IChatService
         set
         {
             _logger = value;
-            _writeRepository.Logger = value;
+            _chatRep.Logger = value;
         }
     }
-    public ChatService(IWriteRepository<Chat> writeRepository, ILambdaLogger? logger = null)
+    public ChatService(IRepository<string, Chat> repository, ILambdaLogger? logger = null)
     {
         _logger = logger;
-        _writeRepository = writeRepository;
+        _chatRep = repository;
         _getCoordinatesClient.BaseAddress = new Uri("https://zukr2k1std.execute-api.us-east-1.amazonaws.com/dev/");
         _getCoordinatesClient.DefaultRequestHeaders.Clear();
     }
@@ -38,7 +38,7 @@ public class ChatService : IChatService
                 throw new Exception("Failed to get coordinates");
             }
             
-            var chat = await _writeRepository.Create(clientId);
+            var chat = await _chatRep.Create(clientId);
             
             _logger?.LogInformation($"Chat created with id {chat.ChatId}");
             
@@ -47,7 +47,7 @@ public class ChatService : IChatService
             
             _logger?.LogInformation($"Coordinates set for chat {chat.ChatId}: {coordinates.lat}, {coordinates.lon}");
             
-            _writeRepository.Update(chat);
+            _chatRep.Update(chat);
             
             _logger?.LogInformation($"Chat updated with coordinates {coordinates.lat}, {coordinates.lon}");
             
@@ -58,6 +58,36 @@ public class ChatService : IChatService
             _logger?.LogError(e.Message);
             throw;
         }
+    }
+
+    public async Task<bool> CheckChatClient(string chatId, string clientId)
+    {
+        var chat = await _chatRep.GetByPkAsync(chatId);
+        
+        if (chat is null)
+        {
+            _logger?.LogError($"Chat with id {chatId} not found");
+            throw new KeyNotFoundException($"Chat with id {chatId} not found");
+        }
+        
+        _logger?.LogInformation($"Chat found with id {chat.ChatId}");
+        _logger?.LogInformation($"Chat client id: {chat.ClientId}, request client id: {clientId}");
+        return chat.ClientId == clientId;
+    }
+
+    public async Task<(string response, List<Product> cart)> ReceiveMessage(string chatId, string message)
+    {
+        var chat = _chatRep.GetByPkAsync(chatId);
+        if (chat is null)
+        {
+            _logger?.LogError($"Chat with id {chatId} not found");
+            throw new KeyNotFoundException($"Chat with id {chatId} not found");
+        }
+        
+        _logger?.LogInformation($"Chat found with id {chatId}");
+        
+        
+        
     }
 
     private async Task<(double lat, double lon)> GetCoordinates(string address)
@@ -78,7 +108,7 @@ public class ChatService : IChatService
             else
             {
                 _logger?.LogError("Failed to parse coordinates");
-                throw new Exception("Failed to get coordinates");
+                throw new Exception("Failed to parse coordinates");
             }
         }
         else

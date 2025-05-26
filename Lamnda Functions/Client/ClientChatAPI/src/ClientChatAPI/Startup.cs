@@ -21,7 +21,7 @@ public class Startup
     {
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<IWriteRepository<Chat>>( (provider) => new DynamoChatRepository(new DynamoDBContext(new AmazonDynamoDBClient())));
-        services.AddScoped<ILambdaLogger>(provider => LambdaEntryPoint.LambdaContext.Logger);
+        //services.AddScoped<ILambdaLogger>(provider => LambdaEntryPoint.LambdaContext.Logger);
         
         services.AddControllers();
         
