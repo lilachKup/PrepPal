@@ -110,7 +110,7 @@ public class Function
     private void SetAIAgent(ILambdaContext context)
     {
         _aiAgent = new OpenAIAgent(CHAT_GPT_4, OPENAI_API_KEY);
-        _aiAgent.MaxTokens = 150;
+        _aiAgent.MaxTokens = 1000;
         _aiAgent.LastMessageTokenCount = 3;
         _aiAgent.PrimaryMessageTokenCount = 3;
         _aiAgent.Logger = context.Logger;
