@@ -342,11 +342,11 @@ public class OpenAIAgent :IAIAgent
 
     private async Task<SystemChatMessage> searchProductsByTags(string[] tags)
     {
-        
         Logger?.LogInformation($"Searching products by tags: " +
                                $"{string.Join(',', tags)}");
-        
         bool failed = true;
+
+        List<string> stores = await getStoresByLocation();
 
         for (int i = 0; i < 3 && failed; ++i)
         {
@@ -355,7 +355,7 @@ public class OpenAIAgent :IAIAgent
                 var response = await _repositoryClient.PostAsJsonAsync("", new
                 {
                     tags = tags,
-                    store_ids = new[] { "24682478-3021-70bf-41e1-a3ee28bb3db7" }
+                    store_ids = stores.ToArray()
                 });
                 
                 Logger?.LogInformation(await response.Content.ReadAsStringAsync());
@@ -384,6 +384,33 @@ public class OpenAIAgent :IAIAgent
             $"The following products were found: [" +
             $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))} " +
             $"]");
+    }
+
+    private async Task<List<string>> getStoresByLocation()
+    {
+        HttpClient client = new HttpClient();
+        client.BaseAddress = new Uri("https://zukr2k1std.execute-api.us-east-1.amazonaws.com/dev/location/stores");
+        string query = $"?coordinates={Chat.Latitude},{Chat.Longitude}&radius=10000";
+        
+        List<string> stores = new List<string>();
+        
+        Logger?.LogInformation($"Getting stores by location: {query}");
+        
+        var response = await client.GetAsync(query);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            Logger?.LogInformation($"Stores by location response: {content}");
+            stores = content.Split(',').ToList();
+        }
+        else
+        {
+            Logger?.LogError($"Failed to get stores by location: {response.ReasonPhrase}");
+            throw new Exception("Failed to get stores by location");
+        }
+        
+        return stores;
     }
 
     private async Task addProductsToOrder(ProductChatGptDto[] products)

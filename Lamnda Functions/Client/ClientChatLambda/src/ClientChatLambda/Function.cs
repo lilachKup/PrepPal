@@ -71,39 +71,6 @@ public class Function
 
     private async Task LoadPrompt(ILambdaContext context)
     {
-        // if (Environment.GetEnvironmentVariable("USE_S3") == "true")
-        // {
-        //     // Create a GetObject request
-        //     var request = new GetObjectRequest
-        //     {
-        //         BucketName = Environment.GetEnvironmentVariable("AWS_S3_BUCKET_NAME"),
-        //         //Key = Environment.GetEnvironmentVariable("AWS_S3_ACCESS_KEY_ID"),
-        //     };
-        //     using (var response = await _s3Client.GetObjectAsync(request))
-        //     {
-        //         using (var responseStream = response.ResponseStream)
-        //         {
-        //             using (var reader = new StreamReader(responseStream))
-        //             {
-        //                 var prompt = await reader.ReadToEndAsync();
-        //                 _aiAgent.Prompt = prompt;
-        //                 context.Logger.LogLine(prompt);
-        //             }
-        //         }
-        //     }
-        // }
-        // else
-        // {
-        //     using (var promptStream = File.OpenRead("ClientChatMainPrompt.txt"))
-        //     {
-        //         byte[] buffer = new byte[promptStream.Length];
-        //         promptStream.Read(buffer);
-        //
-        //         _aiAgent.Prompt = buffer.Length > 0 ? System.Text.Encoding.UTF8.GetString(buffer) : string.Empty;
-        //         context.Logger.LogLine(_aiAgent.Prompt);
-        //     }
-        // }
-
         _aiAgent.Prompt = Prompts.DEFAULT_PROMPT;
     }
 

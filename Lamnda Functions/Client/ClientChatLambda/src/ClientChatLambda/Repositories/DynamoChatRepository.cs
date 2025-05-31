@@ -185,6 +185,9 @@ public class DynamoChatRepository : IChatRepository
         entity.order_products = chat.OrderProducts;
         entity.products_to_serch = chat.ProductsToSearch;
         entity.updated_at = chat.UpdatedAt;
+        entity.latitude = chat.Latitude;
+        entity.longitude = chat.Longitude;
+        entity.entity_version = chat.Version;
         
         Logger.LogDebug($"update chat with id {chat.ChatId}");
         

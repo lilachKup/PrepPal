@@ -4,6 +4,7 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using CreateChatLambda.DB;
+using CreateChatLambda.Models;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -48,6 +49,20 @@ public class Function
         
         context.Logger.LogLine($"Request from client {client_id}");
         
+        var address = JsonSerializer.Deserialize<RequestBody>(request.Body);
+        
+        if (address is null)
+        {
+            context.Logger.LogError("Invalid request body");
+            
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = 400,
+                Body = "Invalid request body",
+                Headers = _headers
+            };
+        }
+        
         if (!hasClientId || string.IsNullOrEmpty(client_id))
         {
             context.Logger.LogError("client_id is required");
@@ -59,10 +74,10 @@ public class Function
                 Headers = _headers
             };
         }
-
+        
         try
         {
-            chat_id = await _dbContext.CreateChat(client_id);
+            chat_id = await _dbContext.CreateChat(client_id, address.address);
         }
         catch (Exception e)
         {

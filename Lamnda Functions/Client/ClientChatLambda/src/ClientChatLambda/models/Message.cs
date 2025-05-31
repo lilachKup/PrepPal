@@ -23,6 +23,8 @@ public class Message
         get { return _createdAt; }
         set {setImutable(ref _createdAt, value);}
     }
+    
+    public int Version { get; set; } = 1;
 
     public Message()
     {
