@@ -99,8 +99,10 @@ public class Function
         var response = await _aiAgent.SendMessage(message);
         
         await _chatRepository.UpdateChat(chat);
+        
+        string? store_id = chat.OrderProducts.Count > 0 ? chat.OrderProducts[0].Store_id : null;
 
-        return new { message = response.Content, products = JsonSerializer.Serialize(chat.OrderProducts) };
+        return new { message = response.Content, products = JsonSerializer.Serialize(chat.OrderProducts) , store_id = store_id };
     }
 
     private (string error, bool isValid) ValidateRequest(PostMessageRequest request)

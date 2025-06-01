@@ -11,6 +11,8 @@ namespace ClientChatLambda.AIAgents;
 
 public class OpenAIAgent :IAIAgent
 {
+    private const int MAX_REPETITION_COUNT = 5;
+    
     private readonly string _model;
     private readonly string _apiKey;
     
@@ -169,7 +171,7 @@ public class OpenAIAgent :IAIAgent
             
             functionCallCount++;
             
-        } while (isNeedToReact && functionCallCount < 3); // run function calls and limit to 3 times
+        } while (isNeedToReact && functionCallCount < MAX_REPETITION_COUNT); // run function calls and limit to 3 times
 
         if (isNeedToReact)
         {

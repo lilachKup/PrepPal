@@ -69,10 +69,10 @@ public class DynamoDB : IDbContext
             throw new Exception("Failed to get coordinates from external service.");
         }
         
-        double latitude = double.Parse(coordinates.lat);
-        double longitude = double.Parse(coordinates.lon);
+        // double latitude = double.Parse(coordinates.lat);
+        // double longitude = double.Parse(coordinates.lon);
         
-        Logger?.LogInformation($"Coordinates for address {address} are lat: {latitude}, lon: {longitude}");
-        return (latitude, longitude);
+        Logger?.LogInformation($"Coordinates for address {address} are lat: {coordinates.lat}, lon: {coordinates.lon}");
+        return (coordinates.lat, coordinates.lon);
     }
 }

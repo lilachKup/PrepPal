@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Amazon.Lambda.Core;
 using OpenAI.Chat;
 
@@ -30,6 +31,8 @@ namespace AddItem
             DotNetEnv.Env.Load();
             OPENAI_API_KEY = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             
+            context.Logger.LogInformation(JsonSerializer.Serialize(product));
+            
             var tags = await getItemTags(product);
 
             context.Logger.LogLine($"tags: {string.Join(", ", tags)}");
@@ -46,10 +49,10 @@ namespace AddItem
             var prompt = $"Create a list of tags for the item i will send to you in this message.\n"+ 
                 $"your response have to be only the tags in this format: tag1, tag2, tag3.\n" +
                 $"i want 6 tags that describe best the item so when i need to find it i can do it by the tags.\n" + 
-                $"Item:\n" + $"name:{postProduct.name},\n" + $"description: {postProduct.description},\n" +$"category: {postProduct.category}";
+                $"Item:\n" + $"name:{postProduct.product_name},\n" + $"description: {postProduct.description},\n" +$"category: {postProduct.category}";
 
             ChatCompletionOptions options = new ChatCompletionOptions();
-            options.MaxOutputTokenCount = 20;
+            options.MaxOutputTokenCount = 50;
 
             List<ChatMessage> messages = new List<ChatMessage>()
             {
