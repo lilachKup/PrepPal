@@ -162,7 +162,7 @@ public class OpenAIAgent :IAIAgent
                 {
                     Logger?.LogInformation($"{call.FunctionName} has called with arguments: {call.FunctionArguments}");
                     var functionResponse = await functionCallHandler(call);
-                    //messages.Add(new ToolChatMessage(call.Id, "Functions executed"));
+                    
                     messages.Add(functionResponse);
                 }
                 

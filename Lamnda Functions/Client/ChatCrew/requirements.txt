@@ -1,0 +1,24 @@
+# CrewAI framework
+crewai
+crewat.tools
+
+# LLM management
+langchain
+
+# Gemini API key management
+python-dotenv==1.1.1
+
+# HTTP requests to external services (like product APIs and store-location APIs)
+httpx==0.27.0
+
+# AWS SDK for Python (DynamoDB interaction)
+boto3
+
+# Data validation and schema for tool inputs
+pydantic==2.11.7
+
+# Command-line argument parsing (used in chat_simulator.py)
+argparse
+
+# For compatibility with older ast.literal_eval-based workflows
+#astunparse; python_version < "3.9"

@@ -1,78 +1,85 @@
-from dataclasses import dataclass, field
+import decimal
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from enum import Enum
-from typing import List, Optional
-
-
-class MessageSenderRole(Enum):
-    NOT_INITIALIZED = 0
-    CLIENT = 1
-    ASSISTANT = 2
-    SYSTEM = 3
-    TOOL = 4
-
+from typing import List
 
 @dataclass
 class Product:
-    Id: str
-    Name: Optional[str] = None
-    Category: Optional[str] = None
-    Tag: Optional[str] = None
-    Brand: Optional[str] = None
-    Price: Optional[str] = None
-    Quantity: Optional[int] = None
-    Store_id: Optional[str] = None
-    entity_version: int = 1
+    id: str
+    name: str
+    quantity: int
+    store_id: str
+    price: decimal
 
-
-@dataclass
-class ProductChatGptDto:
-    P_id: str
-    Product_name: str
-    S_id: Optional[str] = None
-    Q: Optional[int] = None
-
+    def to_dict(self):
+        self.price = decimal.Decimal(str(self.price))
+        return asdict(self)
 
 @dataclass
-class UpdateProductGPT:
-    Id: str
-    StoreId: str
-    NewQuantity: int
+class ProductRef:
+    id: str
+    quantity: int
+    store_id: str
+@dataclass
+class ProductToolInput:
+    id: str
+    product_name: str
+    store_id: str
+    quantity: int
+    price: decimal
 
+    def to_dict(self):
+        self.price = decimal.Decimal(str(self.price))
+        return asdict(self)
+
+@dataclass
+class UpdateRequest:
+    product_id: str
+    store_id: str
+    new_quantity: int
+
+    def to_dict(self):
+        return asdict(self)
 
 @dataclass
 class Message:
-    SenderRole: Optional[MessageSenderRole] = None
-    Content: Optional[str] = None
-    SentAt: Optional[datetime] = None
-    Version: int = 1
+    role: str  # 'client', 'assistant', 'system', 'tool'
+    content: str
+    timestamp: datetime
 
+    def to_dict(self):
+        return {
+            "role": self.role,
+            "content": self.content,
+            "timestamp": str(self.timestamp)
+        }
 
 @dataclass
 class Chat:
-    ClientId: str
-    ChatId: str = field(default_factory=lambda: "chat-" + datetime.now().isoformat())
-    Messages: List[Message] = field(default_factory=list)
-    PrimaryMessages: List[Message] = field(default_factory=list)
-    OrderProducts: List[Product] = field(default_factory=list)
-    ProductsToSearch: List[Product] = field(default_factory=list)
-    CreatedAt: datetime = field(default_factory=datetime.now)
-    UpdatedAt: datetime = field(default_factory=datetime.now)
-    Latitude: float = 32.046923
-    Longitude: float = 34.759446
-    Version: int = 1
+    client_id: str
+    messages: List[Message] = field(default_factory=list)
+    order: List[Product] = field(default_factory=list)
+    latitude: decimal = 32.046923
+    longitude: decimal = 34.759446
+    products_to_search: List[Product] = field(default_factory=list)
 
     def add_message(self, message: Message):
-        self.Messages.append(message)
-        self.UpdatedAt = message.SentAt or datetime.now()
+        self.messages.append(message)
 
-    def add_primary_message(self, message: Message):
-        self.PrimaryMessages.append(message)
+    def add_to_order(self, product: Product):
+        self.order.append(product)
 
+    def update_quantity(self, update: UpdateRequest):
+        for p in self.order:
+            if p.id == update.product_id and p.store_id == update.store_id:
+                p.quantity = update.new_quantity
+        self.order = [p for p in self.order if p.quantity > 0]
 
-@dataclass
-class PostMessageRequest:
-    chat_id: str
-    client_id: str
-    message: str
-    create_chat: bool
+    def to_dict(self):
+        return {
+            "client_id": self.client_id,
+            "messages": [m.to_dict() for m in self.messages],
+            "order": [p.to_dict() for p in self.order],
+            "latitude": self.latitude,
+            "longitude": self.longitude
+        }
