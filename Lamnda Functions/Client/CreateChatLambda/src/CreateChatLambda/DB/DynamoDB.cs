@@ -31,6 +31,8 @@ public class DynamoDB : IDbContext
         
         // Get coordinates for the address
         (double lat, double lon) = await GetCoordinates(address);
+        
+        Logger?.LogInformation($"Creating new chat with lat: {lat}, lon: {lon}");
 
         var chat = new ChatEntity();
         chat.client_id = client_id;
@@ -38,7 +40,9 @@ public class DynamoDB : IDbContext
         chat.latitude = lat;
         chat.longitude = lon;
         
-        Logger?.LogInformation($"Creating chat for client {client_id} with id {chat.chat_id}");
+        Logger?.LogInformation($"Create chat: {JsonSerializer.Serialize(chat)}");
+        
+        
         
         await _dynamoDBClient.SaveAsync(chat);
         
@@ -61,6 +65,7 @@ public class DynamoDB : IDbContext
         }
         
         string content = await response.Content.ReadAsStringAsync();
+        Logger?.LogInformation($"Response content for address {address}: {content}");
         var coordinates = JsonSerializer.Deserialize<Coordinate>(content);
 
         if (coordinates is null)

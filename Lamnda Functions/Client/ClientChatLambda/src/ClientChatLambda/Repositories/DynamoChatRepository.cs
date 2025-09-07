@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
@@ -53,16 +54,14 @@ public class DynamoChatRepository : IChatRepository
         }
 
         ChatEntity? entity = await _context.LoadAsync<ChatEntity>(chat_id, clinet_id);
-
-        Logger.LogDebug(entity.ToString());
-
+        
         if (entity == null)
         {
-            Logger.LogDebug($"chat with id {chat_id} not found");
+            Logger.LogInformation($"chat with id {chat_id} not found");
             throw new KeyNotFoundException($"Chat with id {chat_id} not found");
         }
         
-        Logger.LogDebug($"get chat with id {chat_id}");
+        Logger.LogInformation($"Chat: {JsonSerializer.Serialize(entity)}");
         return new Chat(entity);
     }
 

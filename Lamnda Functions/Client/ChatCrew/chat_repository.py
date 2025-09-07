@@ -1,3 +1,5 @@
+import decimal
+
 import boto3
 import os
 from decimal import Decimal
@@ -13,28 +15,22 @@ chat_table = dynamodb.Table(CHAT_TABLE_NAME)
 
 
 def chat_to_dict(chat: Chat) -> dict:
+    return chat.to_dict()
+
+
+def product_to_dynamodb_dict(product: Product) -> dict:
+    """Convert Product to dict for DynamoDB storage (keeping Decimal types)"""
     return {
-        "chat_id": chat.chat_id,
-        "client_id": chat.client_id,
-        "messages": [m.to_dict() for m in chat.messages],
-        "order": [p.to_dict() for p in chat.order],
-        "latitude": Decimal(str(chat.latitude)),
-        "longitude": Decimal(str(chat.longitude)),
-        "created_at": chat.created_at,
-        "updated_at": chat.updated_at
+        "id": product.id,
+        "name": product.name,
+        "quantity": product.quantity,
+        "store_id": product.store_id,
+        "price_agorot": decimal.Decimal(str(product.price_agorot))  # Keep as Decimal for DynamoDB
     }
 
 
 def chat_from_dict(data: dict) -> Chat:
-    chat = Chat(client_id=data["client_id"])
-    chat.chat_id = data["chat_id"]
-    chat.latitude = float(data.get("latitude", 32.046923))
-    chat.longitude = float(data.get("longitude", 34.759446))
-    chat.created_at = data["created_at"]
-    chat.updated_at = data["updated_at"]
-    chat.messages = [Message(**m) for m in data.get("messages", [])]
-    chat.order = [Product(**p) for p in data.get("order", [])]
-    return chat
+    return Chat.from_dict(data)
 
 
 def get_chat(chat_id: str, client_id: str) -> Chat:

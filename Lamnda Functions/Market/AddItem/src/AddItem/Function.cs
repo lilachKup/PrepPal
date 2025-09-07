@@ -48,8 +48,9 @@ namespace AddItem
 
             var prompt = $"Create a list of tags for the item i will send to you in this message.\n"+ 
                 $"your response have to be only the tags in this format: tag1, tag2, tag3.\n" +
-                $"i want 6 tags that describe best the item so when i need to find it i can do it by the tags.\n" + 
-                $"Item:\n" + $"name:{postProduct.product_name},\n" + $"description: {postProduct.description},\n" +$"category: {postProduct.category}";
+                $"i want 20 tags that describe best the item so when i need to find it i can do it by the tags.\n" +
+                $"Include the name fo the product, kind (e.g. wine, cheese, bread, etc), main ingredients, color, brand, and other relevant attributes.\n" +
+                $"Item:\n" + $"name:{postProduct.product_name},\n" + $"brand:{postProduct.brand}" + $"description: {postProduct.description},\n" +$"category: {postProduct.category}";
 
             ChatCompletionOptions options = new ChatCompletionOptions();
             options.MaxOutputTokenCount = 50;

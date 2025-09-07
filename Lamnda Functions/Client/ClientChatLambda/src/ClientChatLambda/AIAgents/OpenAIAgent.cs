@@ -5,6 +5,7 @@ using Amazon.Lambda.Core;
 using ClientChatLambda.models;
 using OpenAI.Chat;
 using ChatToolChoice = OpenAI.Chat.ChatToolChoice;
+using ClientChatLambda.Exeptions;
 
 #pragma warning disable OPENAI001
 namespace ClientChatLambda.AIAgents;
@@ -166,12 +167,27 @@ public class OpenAIAgent :IAIAgent
                     messages.Add(functionResponse);
                 }
                 
+                // If no products were found and functionCallCount is 5, generate a response
+                if (functionCallCount >= MAX_REPETITION_COUNT && messages[messages.Count - 1] is ToolChatMessage toolMessage &&
+                    toolMessage.Content.Contains("No products found by tags"))
+                {
+                    Logger?.LogInformation("No products found by tags, generating response without function call.");
+                    
+                    var toolResposne = messages.Last() as ToolChatMessage;
+                    var newToolReponse = new ToolChatMessage(toolMessage.ToolCallId, "No products found, generating response without function call.");
+                    messages.Remove(toolMessage);
+                    messages.Add(newToolReponse);
+                    
+                    chatResponse = await _chatClient.CompleteChatAsync(messages, options);
+                    break;
+                }
+                
                 isNeedToReact = true;
             }
             
             functionCallCount++;
             
-        } while (isNeedToReact && functionCallCount < MAX_REPETITION_COUNT); // run function calls and limit to 3 times
+        } while (isNeedToReact && functionCallCount < MAX_REPETITION_COUNT); // run function calls and limit to 5 times
 
         if (isNeedToReact)
         {
@@ -186,7 +202,6 @@ public class OpenAIAgent :IAIAgent
             SentAt = DateTime.Now
         };
 
-        Chat.AddMessage(assistantMessage);
         return assistantMessage;
     }
 
@@ -350,35 +365,47 @@ public class OpenAIAgent :IAIAgent
 
         List<string> stores = await getStoresByLocation();
 
-        for (int i = 0; i < 3 && failed; ++i)
+        if (stores.Count == 0)
         {
-            try
-            {
-                var response = await _repositoryClient.PostAsJsonAsync("", new
-                {
-                    tags = tags,
-                    store_ids = stores.ToArray()
-                });
-                
-                Logger?.LogInformation(await response.Content.ReadAsStringAsync());
-        
-                _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
-                Chat.ProductsToSearch.AddRange(_products_srearch);
-                
-                failed = false;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            throw new StoresNotFoundException("There is no close market to your location. " +
+                                              "Please try again later or change your location.");
         }
+
+
+        try
+        {
+            var response = await _repositoryClient.PostAsJsonAsync("", new
+            {
+                tags = tags,
+                store_ids = stores.ToArray()
+            });
+
+            Logger?.LogInformation(await response.Content.ReadAsStringAsync());
+
+            _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
+            Chat.ProductsToSearch.AddRange(_products_srearch);
+            
+            if (_products_srearch == null || _products_srearch.Count == 0)
+            {
+                Logger?.LogInformation("No products found by tags");
+                return new SystemChatMessage($"No products found by tags: {string.Join(',', tags)}. " +
+                                             "Please try again with different tags.");
+            }
+
+            failed = false;
+        }
+        catch (Exception e)
+        {
+            Logger?.LogError(e,e.Message);
+        }
+
 
         if (failed)
         {
             Logger?.LogError("Failed to search products by tags");
             throw new Exception("Failed to search products by tags");
         }
-        
+
         Logger?.LogInformation($"Products found: " +
                                $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
 
@@ -409,7 +436,7 @@ public class OpenAIAgent :IAIAgent
         else
         {
             Logger?.LogError($"Failed to get stores by location: {response.ReasonPhrase}");
-            throw new Exception("Failed to get stores by location");
+            stores = new List<string>();
         }
         
         return stores;

@@ -32,6 +32,8 @@ public class Function
     /// <returns></returns>
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
     {
+        _storeProvider.Logger = context.Logger;
+        
         var coordinates = request.QueryStringParameters["coordinates"];
         var radiusStr = request.QueryStringParameters["radius"];
         
@@ -52,6 +54,8 @@ public class Function
             };
         }
         
+        context.Logger.LogLine($"Radius: {radius}");
+        
         var coordinatesArray = coordinates.Split(',');
         if (coordinatesArray.Length != 2 || 
             !double.TryParse(coordinatesArray[0], out var latitude) || 
@@ -66,6 +70,8 @@ public class Function
                 Headers = headers
             };
         }
+        
+        context.Logger.LogLine($"Latitude: {latitude}, Longitude: {longitude}");
 
         List<string> storeIds;
         
