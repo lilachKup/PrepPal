@@ -383,6 +383,17 @@ public class OpenAIAgent :IAIAgent
             Logger?.LogInformation(await response.Content.ReadAsStringAsync());
 
             _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
+            if (Chat.OrderProducts.Count > 0)
+            {
+                var store_id = Chat.OrderProducts.First().Store_id;
+                Logger?.LogInformation($"Found {store_id} products");
+                var products = _products_srearch.Where(p => p.Store_id == store_id).ToList();
+                _products_srearch.AddRange(products);
+                _products_srearch = _products_srearch.Where(p => p.Store_id == store_id).ToList();
+                Logger?.LogInformation($"Filtered products by store_id {store_id}\n " +
+                                       $"{string.Join('\n', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
+            }
+            
             Chat.ProductsToSearch.AddRange(_products_srearch);
             
             if (_products_srearch == null || _products_srearch.Count == 0)
