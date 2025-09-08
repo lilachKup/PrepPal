@@ -1,0 +1,151 @@
+
+.chat-box {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background-color: #fdfbff;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', sans-serif;
+  margin-bottom: 12px;
+}
+
+.msg-box {
+  width: 70%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #000;
+  margin: 8px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+
+.chat-row.user .msg-box {
+  background-color: #d1e7ff;
+}
+
+.chat-row.bot .msg-box {
+  background-color: #f3e5f5;
+}
+
+.chat-row {
+  display: flex;
+  margin: 6px 0;
+}
+
+.chat-row.user {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.chat-row.bot {
+  justify-content: flex-start;
+  text-align: left;
+
+}
+
+
+.chat-input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.chat-send-btn {
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chat-send-btn:hover {
+  background-color: #357abd;
+}
+
+.chat-send-btn.disabled-btn {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.chat-input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 16px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background-color: #aaa;
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.chat-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-box::-webkit-scrollbar { width: 8px; }
+.chat-box::-webkit-scrollbar-thumb {
+  background: #e1def0;
+  border-radius: 8px;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+
+  20% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+}
+
+.chat-box {
+  scrollbar-width: thin;                          /* Firefox */
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+.chat-box::-webkit-scrollbar { width: 8px; }
+.chat-box::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+}
