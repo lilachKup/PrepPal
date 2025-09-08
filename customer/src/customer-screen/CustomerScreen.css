@@ -1,6 +1,0 @@
-.content-container {
-    display: flex; /* מסדר את שני הרכיבים בשורה */
-    gap: 20px; /* מוסיף רווח ביניהם */
-    align-items: flex-start; /* מיושר למעלה */
-    justify-content: center;
-}

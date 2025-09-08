@@ -5,12 +5,15 @@ using Amazon.Lambda.Core;
 using ClientChatLambda.models;
 using OpenAI.Chat;
 using ChatToolChoice = OpenAI.Chat.ChatToolChoice;
+using ClientChatLambda.Exeptions;
 
 #pragma warning disable OPENAI001
 namespace ClientChatLambda.AIAgents;
 
 public class OpenAIAgent :IAIAgent
 {
+    private const int MAX_REPETITION_COUNT = 5;
+    
     private readonly string _model;
     private readonly string _apiKey;
     
@@ -160,8 +163,24 @@ public class OpenAIAgent :IAIAgent
                 {
                     Logger?.LogInformation($"{call.FunctionName} has called with arguments: {call.FunctionArguments}");
                     var functionResponse = await functionCallHandler(call);
-                    //messages.Add(new ToolChatMessage(call.Id, "Functions executed"));
+                    
+                    Logger?.LogInformation($"Function result: {functionResponse.Content[0].Text}");
                     messages.Add(functionResponse);
+                }
+                
+                // If no products were found and functionCallCount is 5, generate a response
+                if (functionCallCount >= MAX_REPETITION_COUNT && messages[messages.Count - 1] is ToolChatMessage toolMessage &&
+                    toolMessage.Content.Contains("No products found by tags"))
+                {
+                    Logger?.LogInformation("No products found by tags, generating response without function call.");
+                    
+                    var toolResposne = messages.Last() as ToolChatMessage;
+                    var newToolReponse = new ToolChatMessage(toolMessage.ToolCallId, "No products found, generating response without function call.");
+                    messages.Remove(toolMessage);
+                    messages.Add(newToolReponse);
+                    
+                    chatResponse = await _chatClient.CompleteChatAsync(messages, options);
+                    break;
                 }
                 
                 isNeedToReact = true;
@@ -169,7 +188,7 @@ public class OpenAIAgent :IAIAgent
             
             functionCallCount++;
             
-        } while (isNeedToReact && functionCallCount < 3); // run function calls and limit to 3 times
+        } while (isNeedToReact && functionCallCount < MAX_REPETITION_COUNT); // run function calls and limit to 5 times
 
         if (isNeedToReact)
         {
@@ -184,7 +203,6 @@ public class OpenAIAgent :IAIAgent
             SentAt = DateTime.Now
         };
 
-        Chat.AddMessage(assistantMessage);
         return assistantMessage;
     }
 
@@ -342,34 +360,57 @@ public class OpenAIAgent :IAIAgent
 
     private async Task<SystemChatMessage> searchProductsByTags(string[] tags)
     {
-        
         Logger?.LogInformation($"Searching products by tags: " +
                                $"{string.Join(',', tags)}");
-        
         bool failed = true;
 
-        for (int i = 0; i < 3 && failed; ++i)
+        List<string> stores = await getStoresByLocation();
+
+        if (stores.Count == 0)
         {
-            try
-            {
-                var response = await _repositoryClient.PostAsJsonAsync("", new
-                {
-                    tags = tags,
-                    store_ids = new[] { "24682478-3021-70bf-41e1-a3ee28bb3db7" }
-                });
-                
-                Logger?.LogInformation(await response.Content.ReadAsStringAsync());
-        
-                _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
-                Chat.ProductsToSearch.AddRange(_products_srearch);
-                
-                failed = false;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            throw new StoresNotFoundException("There is no close market to your location. " +
+                                              "Please try again later or change your location.");
         }
+
+
+        try
+        {
+            var response = await _repositoryClient.PostAsJsonAsync("", new
+            {
+                tags = tags,
+                store_ids = stores.ToArray()
+            });
+
+            Logger?.LogInformation(await response.Content.ReadAsStringAsync());
+
+            _products_srearch = await response.Content.ReadFromJsonAsync<List<Product>>();
+            if (Chat.OrderProducts.Count > 0)
+            {
+                var store_id = Chat.OrderProducts.First().Store_id;
+                Logger?.LogInformation($"Found {store_id} products");
+                var products = _products_srearch.Where(p => p.Store_id == store_id).ToList();
+                _products_srearch.AddRange(products);
+                _products_srearch = _products_srearch.Where(p => p.Store_id == store_id).ToList();
+                Logger?.LogInformation($"Filtered products by store_id {store_id}\n " +
+                                       $"{string.Join('\n', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
+            }
+            
+            Chat.ProductsToSearch.AddRange(_products_srearch);
+            
+            if (_products_srearch == null || _products_srearch.Count == 0)
+            {
+                Logger?.LogInformation("No products found by tags");
+                return new SystemChatMessage($"No products found by tags: {string.Join(',', tags)}. " +
+                                             "Please try again with different tags.");
+            }
+
+            failed = false;
+        }
+        catch (Exception e)
+        {
+            Logger?.LogError(e,e.Message);
+        }
+
 
         if (failed)
         {
@@ -377,13 +418,53 @@ public class OpenAIAgent :IAIAgent
             throw new Exception("Failed to search products by tags");
         }
         
-        Logger?.LogInformation($"Products found: " +
-                               $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
 
+        var products_to_gpt = from prod in _products_srearch
+            select new
+            {
+                Id = prod.Id,
+                Product_name = prod.Name,
+                Store_id = prod.Store_id,
+                Price = prod.Price,
+                Brand = prod.Brand,
+                InStock = prod.Quantity,
+            };
+        
+        Logger?.LogInformation($"Products found: " +
+                               $"{string.Join(',', products_to_gpt.Select(p => JsonSerializer.Serialize(p)))}");
+        
         return new SystemChatMessage(
-            $"The following products were found: [" +
-            $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))} " +
-            $"]");
+            $"""
+                Products found by tags: 
+                {string.Join(',', products_to_gpt.Select(p => JsonSerializer.Serialize(p)))}
+             """);
+    }
+
+    private async Task<List<string>> getStoresByLocation()
+    {
+        HttpClient client = new HttpClient();
+        client.BaseAddress = new Uri("https://zukr2k1std.execute-api.us-east-1.amazonaws.com/dev/location/stores");
+        string query = $"?coordinates={Chat.Latitude},{Chat.Longitude}&radius=10000";
+        
+        List<string> stores = new List<string>();
+        
+        Logger?.LogInformation($"Getting stores by location: {query}");
+        
+        var response = await client.GetAsync(query);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            Logger?.LogInformation($"Stores by location response: {content}");
+            stores = content.Split(',').ToList();
+        }
+        else
+        {
+            Logger?.LogError($"Failed to get stores by location: {response.ReasonPhrase}");
+            stores = new List<string>();
+        }
+        
+        return stores;
     }
 
     private async Task addProductsToOrder(ProductChatGptDto[] products)
@@ -417,7 +498,8 @@ public class OpenAIAgent :IAIAgent
                 Brand = product.Brand,
                 Price = product.Price,
                 Quantity = (int) quantity,
-                Store_id = product.Store_id
+                Store_id = product.Store_id,
+                Image_url = product.Image_url
             };
                 
             Chat.OrderProducts.Add(product_to_add);

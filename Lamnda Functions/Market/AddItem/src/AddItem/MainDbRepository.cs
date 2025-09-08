@@ -24,7 +24,7 @@ public class MainDbRepository : IRepository
         var requestBody = new
         {
             store_id = product.store_id,
-            product_name = product.name,
+            product_name = product.product_name,
             description = product.description,
             price = product.price,
             brand = product.brand,
@@ -35,7 +35,7 @@ public class MainDbRepository : IRepository
             
         };
         
-        _logger.LogDebug(JsonSerializer.Serialize(requestBody));
+        _logger?.LogInformation(JsonSerializer.Serialize(requestBody));
 
         var response = await _dbClinet.PostAsJsonAsync("", requestBody);
 

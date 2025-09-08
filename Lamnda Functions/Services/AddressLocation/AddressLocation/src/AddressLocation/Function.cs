@@ -16,7 +16,9 @@ public class Function
     {
         { "Content-Type", "application/json" },
         { "Access-Control-Allow-Origin", "*" },     // or "http://localhost:3000"  
-        { "Access-Control-Allow-Credentials", "true" } // if you ever need cookies/auth
+        { "Access-Control-Allow-Methods", "GET,OPTIONS" },
+        { "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization" }
+        
     };
     
     /// <summary>

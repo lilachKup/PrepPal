@@ -18,6 +18,12 @@ public class Chat
     public List<Product> ProductsToSearch => _products_to_search;
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
+    
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    
+    public int Version { get; set; } = 1;
+
 
     public Chat(string client_id)
     {
@@ -40,6 +46,8 @@ public class Chat
         _products_to_search = chatEntity.products_to_serch;
         CreatedAt = chatEntity.created_at;
         UpdatedAt = chatEntity.updated_at;
+        
+        versionAdapter(chatEntity);
     }
 
     public void AddMessage(Message message)
@@ -56,5 +64,27 @@ public class Chat
     public void AddPrimaryMessage(Message message)
     {
         _primary_messages.Add(message);
+    }
+
+    private void versionAdapter(ChatEntity entity)
+    {
+        if (entity.entity_version <= 1)
+        {
+            coordinatesAdapter(entity);
+        }
+    }
+    
+    private void coordinatesAdapter(ChatEntity entity)
+    {
+        if (entity.latitude != 0 && entity.longitude != 0)
+        {
+            Latitude = entity.latitude;
+            Longitude = entity.longitude;
+        }
+        else
+        {
+            Latitude = 32.046923;
+            Longitude = 34.759446;
+        }
     }
 }

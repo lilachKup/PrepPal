@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ClientChatLambda.models;
 
 public class Product
@@ -10,6 +12,9 @@ public class Product
     public string? Price { get; set; }
     public int? Quantity { get; set; }
     public string? Store_id { get; set; }
+    
+    [JsonPropertyName("image_url")]
+    public string? Image_url { get; set; }
     
     public int entity_version { get; set; } = 1; // version for optimistic concurrency control
 }

@@ -17,5 +17,26 @@ public class ChatEntity
     public DateTime updated_at { get; set; }
     public List<MessageEntity> primary_messages { get; set; } = new List<MessageEntity>();
     
+    public double latitude { get; set; }
+    public double longitude { get; set; }
+
     public int entity_version { get; set; } = 1;
+
+    public static ChatEntity FromChat(Chat chat)
+    {
+        ChatEntity entity = new ChatEntity();
+        
+        entity.chat_id = chat.ChatId;
+        entity.client_id = chat.ClientId;
+        entity.messages = chat.Messages.Select(m => MessageEntity.FromMessage(m)).ToList();
+        entity.order_products = chat.OrderProducts;
+        entity.products_to_serch = chat.ProductsToSearch;
+        entity.created_at = chat.CreatedAt;
+        entity.updated_at = chat.UpdatedAt;
+        entity.primary_messages = chat.PrimaryMessages.Select(m => MessageEntity.FromMessage(m)).ToList();
+        entity.latitude = chat.Latitude;
+        entity.longitude = chat.Longitude;
+        entity.entity_version = chat.Version;
+        return entity;
+    }
 }
