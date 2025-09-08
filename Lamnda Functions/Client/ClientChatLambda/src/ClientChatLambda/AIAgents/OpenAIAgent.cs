@@ -12,7 +12,7 @@ namespace ClientChatLambda.AIAgents;
 
 public class OpenAIAgent :IAIAgent
 {
-    private const int MAX_REPETITION_COUNT = 5;
+    private const int MAX_REPETITION_COUNT = 20;
     
     private readonly string _model;
     private readonly string _apiKey;
@@ -387,7 +387,7 @@ public class OpenAIAgent :IAIAgent
             if (Chat.OrderProducts.Count > 0)
             {
                 var store_id = Chat.OrderProducts.First().Store_id;
-                Logger?.LogInformation($"Found {store_id} products");
+                Logger?.LogInformation($"Found {_products_srearch.Count} products");
                 var products = _products_srearch.Where(p => p.Store_id == store_id).ToList();
                 _products_srearch.AddRange(products);
                 _products_srearch = _products_srearch.Where(p => p.Store_id == store_id).ToList();
@@ -499,7 +499,7 @@ public class OpenAIAgent :IAIAgent
                 Price = product.Price,
                 Quantity = (int) quantity,
                 Store_id = product.Store_id,
-                Image_url = product.Image_url
+                //Image_url = product.Image_url
             };
                 
             Chat.OrderProducts.Add(product_to_add);

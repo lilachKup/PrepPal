@@ -13,8 +13,8 @@ public class Product
     public int? Quantity { get; set; }
     public string? Store_id { get; set; }
     
-    [JsonPropertyName("image_url")]
-    public string? Image_url { get; set; }
+    //[JsonPropertyName("image_url")]
+    //public string? Image_url { get; set; }
     
     public int entity_version { get; set; } = 1; // version for optimistic concurrency control
 }

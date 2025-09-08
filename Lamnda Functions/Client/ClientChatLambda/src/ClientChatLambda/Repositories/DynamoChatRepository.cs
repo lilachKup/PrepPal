@@ -155,7 +155,8 @@ public class DynamoChatRepository : IChatRepository
             Logger.LogDebug($"chat with id {chat_id} not found");
             throw new KeyNotFoundException($"Chat with id {chat_id} not found");
         }
-        
+
+        //product.Image_url = "";
         entity.order_products.Add(product);
         entity.updated_at = DateTime.UtcNow;
         
