@@ -1,0 +1,134 @@
+.order-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .order-item {
+    display: flex;
+    align-items: center;
+    background-color: #fdfbff;
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #333;
+    border: 1px solid #ddd;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05);
+    gap: 10px;
+  }
+  
+  .order-item-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 8px;
+    background-color: #eee;
+  }
+  
+  .order-item-text {
+    flex: 1;
+  }
+  .remove-order-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: auto;
+    color: #888;
+    transition: color 0.2s ease;
+  }
+  
+  .remove-order-btn:hover {
+    color: #e53935;
+  }
+  
+
+  .order-item {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;           
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.order-item-details {
+  display: flex;
+  flex-direction: column; 
+  gap: 4px;
+}
+
+.order-item-img {
+  width: 50px;  
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-left: 10px;
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  background: #fff;        
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+
+  position: sticky;
+  top: 0;                  
+  z-index: 10;             
+}
+
+.order-total-price {
+  min-width: 80px;
+  text-align: end;
+}
+
+
+.current-order {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.order-total {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.order-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 10px 0 10px;
+}
+
+.order-scroll { scrollbar-width: thin; }         /* Firefox */
+.order-scroll::-webkit-scrollbar { width: 6px; }  /* Chrome/Edge */
+.order-scroll::-webkit-scrollbar-thumb { 
+  background: #c8c8c8; border-radius: 6px; 
+}
+.order-scroll::-webkit-scrollbar-track { background: transparent; }
+
+
+
+
+
+  

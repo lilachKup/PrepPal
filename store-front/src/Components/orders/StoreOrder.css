@@ -1,0 +1,141 @@
+.store-orders-wrapper {
+    padding: 40px 5vw;
+    background-color: #f9f6ff;
+    min-height: 100vh;
+    width: 100vw;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .store-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #3a0ca3;
+    letter-spacing: 0.5px;
+  }
+  
+  .orders-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    max-width: 1000px;
+    margin: 0 auto;
+    gap: 32px;
+  }
+  
+  .order-card {
+    background-color: #ffffff;
+    color: #333;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #e0d8f8;
+    box-shadow: 0 4px 12px rgba(58, 12, 163, 0.1);
+    transition: transform 0.2s ease;
+  }
+  
+  .order-card.expanded {
+    transform: scale(1.015);
+  }
+  
+  .order-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  .toggle-button {
+    margin-top: 10px;
+    background-color: #ede7f6;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    color: #3a0ca3;
+  }
+  
+  .toggle-button:hover {
+    background-color: #d6c9f0;
+  }
+  
+  .product-list {
+    margin-top: 12px;
+    list-style: disc inside;
+    padding-left: 0;
+    font-size: 15px;
+    color: #555;
+  }
+  
+  .card-buttons {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .ready-btn,
+  .reject-btn {
+    flex: 1;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    color: #fff;
+  }
+  
+  .ready-btn {
+    background-color: #3a0ca3;
+  }
+  .ready-btn:hover {
+    background-color: #240678;
+    transform: scale(1.03);
+  }
+  
+  .reject-btn {
+    background-color: #e74c3c;
+  }
+  .reject-btn:hover {
+    background-color: #c0392b;
+    transform: scale(1.03);
+  }
+
+  .product-grid {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .product-chip {
+    background-color: #ede7f6;
+    color: #3a0ca3;
+    border-radius: 20px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .product-name {
+    margin-right: 6px;
+  }
+  
+  .product-qty {
+    font-weight: bold;
+  }
+
+
+.go-to-store-button {
+  margin: 10px;
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}

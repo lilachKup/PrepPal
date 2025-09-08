@@ -1,0 +1,123 @@
+/* ===== Vars ===== */
+:root{
+  --topbar: 72px;                         
+  --gap: 20px;                             
+  --pp-purple-border: rgba(70,8,114,.25);  
+  --pp-green-border:  #c2e2d3;  
+  --pp-orange-panel:  #FFE3C2;   
+}
+
+/* ===== Layout – Desktop/Tablet ===== */
+.customer-layout{
+  display:flex;
+  flex-direction:row;
+  height:calc(100vh - var(--topbar));    
+  padding:var(--gap);
+  gap:var(--gap);
+  box-sizing:border-box;
+  align-items:stretch;                
+}
+
+.chat-panel,
+.order-panel{
+  background:#f9f9f9;
+  border-radius:10px;
+  padding:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  overflow:auto;                           
+  min-height:0;                    
+}
+
+.chat-panel { flex:1.5; display:flex; flex-direction:column; border:2px solid var(--pp-purple-border); }
+.old-orders { flex:1;   display:flex; flex-direction:column; gap:var(--gap); background:transparent; border:none; box-shadow:none; padding:0; min-height:0; }
+.order-panel{ flex:1;   display:flex; flex-direction:column; border:2px solid var(--pp-green-border); }
+
+.chat-panel > div:last-child{ display:flex; flex-direction:column; flex:1; min-height:0; }
+
+.old-orders > .previous-orders,
+.old-orders > .active-order{
+  margin:0; display:flex; flex-direction:column; min-height:0; width:100%; box-sizing:border-box;
+}
+.previous-orders{ flex:2; }
+.active-order   { flex:1; }
+.previous-orders .section-title,
+.active-order .section-title{ margin-top:0; }
+
+.order-panel > *:nth-child(2){ flex:1; min-height:0; overflow:auto; }
+
+.section-title{
+  font:700 20px 'Segoe UI', sans-serif;
+  color:#460872;
+  margin-bottom:10px;
+}
+
+/* ===== Chat input & button ===== */
+.chat-input-container{ display:flex; gap:10px; }
+.chat-input{
+  flex:1; height:40px; padding:10px 12px;
+  border:1px solid #ddd; border-radius:8px; outline:none; background:#fff;
+}
+.chat-input:focus{
+  border-color:#b9a3d4;
+  box-shadow:0 0 0 3px rgba(70,8,114,.12);
+}
+.chat-send-btn{
+  padding:10px 16px; background:#460872; color:#fff;
+  border:none; border-radius:8px; font-weight:700; cursor:pointer;
+  transition:filter .15s ease, transform .02s ease;
+}
+.chat-send-btn:hover:enabled{ filter:brightness(1.05); }
+.chat-send-btn:active:enabled{ transform:translateY(1px); }
+.chat-send-btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+/* ===== Send Order buttons ===== */
+.active-order .send-order-btn,
+.order-panel .send-order-btn{
+  padding:12px; background-color:#4A90E2; color:#fff;
+  border:none; border-radius:8px; font-weight:700; width:100%;
+  cursor:pointer; transition:background-color .2s ease, filter .15s ease;
+}
+.active-order .send-order-btn:hover:enabled,
+.order-panel .send-order-btn:hover:enabled{ background-color:#357abd; }
+.active-order .send-order-btn:disabled,
+.order-panel .send-order-btn:disabled{ background-color:#bbb; cursor:not-allowed; }
+
+/* ===== Mobile ===== */
+@media (max-width:768px){
+  .customer-layout{ flex-direction:column; height:auto; }
+  .chat-panel, .old-orders, .order-panel{ width:100%; height:auto; }
+  .previous-orders{ flex:2; }
+  .active-order   { flex:1; }
+}
+
+.order-panel > *:nth-child(2)::-webkit-scrollbar{ width:8px; }
+.order-panel > *:nth-child(2)::-webkit-scrollbar-thumb{ background:#e1def0; border-radius:8px; }
+
+.empty-hint{ color:#777; font-style:italic; margin:8px 0 0; }
+
+:root { --scroll-thumb: #e1def0; }
+
+.order-panel > *:nth-child(2) {
+  scrollbar-width: thin;                       /* Firefox */
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+.order-panel > *:nth-child(2)::-webkit-scrollbar { width: 8px; }
+.order-panel > *:nth-child(2)::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+}
+
+.previous-orders,
+.active-order {
+  overflow: auto;                            
+  scrollbar-width: thin;                        /* Firefox */
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+.previous-orders::-webkit-scrollbar,
+.active-order::-webkit-scrollbar { width: 8px; }
+.previous-orders::-webkit-scrollbar-thumb,
+.active-order::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+}
+

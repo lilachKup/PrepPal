@@ -1,0 +1,12 @@
+
+.active-order {
+    flex: 1;
+    background-color: #fff;
+    border: 2px solid var(--pp-orange-panel);
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+.active-order { margin: 0; }
