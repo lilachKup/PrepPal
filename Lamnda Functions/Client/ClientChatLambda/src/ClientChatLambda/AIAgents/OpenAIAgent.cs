@@ -164,6 +164,7 @@ public class OpenAIAgent :IAIAgent
                     Logger?.LogInformation($"{call.FunctionName} has called with arguments: {call.FunctionArguments}");
                     var functionResponse = await functionCallHandler(call);
                     
+                    Logger?.LogInformation($"Function result: {functionResponse.Content[0].Text}");
                     messages.Add(functionResponse);
                 }
                 
@@ -416,14 +417,27 @@ public class OpenAIAgent :IAIAgent
             Logger?.LogError("Failed to search products by tags");
             throw new Exception("Failed to search products by tags");
         }
+        
 
+        var products_to_gpt = from prod in _products_srearch
+            select new
+            {
+                Id = prod.Id,
+                Product_name = prod.Name,
+                Store_id = prod.Store_id,
+                Price = prod.Price,
+                Brand = prod.Brand,
+                InStock = prod.Quantity,
+            };
+        
         Logger?.LogInformation($"Products found: " +
-                               $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))}");
-
+                               $"{string.Join(',', products_to_gpt.Select(p => JsonSerializer.Serialize(p)))}");
+        
         return new SystemChatMessage(
-            $"The following products were found: [" +
-            $"{string.Join(',', _products_srearch.Select(p => JsonSerializer.Serialize(p)))} " +
-            $"]");
+            $"""
+                Products found by tags: 
+                {string.Join(',', products_to_gpt.Select(p => JsonSerializer.Serialize(p)))}
+             """);
     }
 
     private async Task<List<string>> getStoresByLocation()
@@ -484,7 +498,8 @@ public class OpenAIAgent :IAIAgent
                 Brand = product.Brand,
                 Price = product.Price,
                 Quantity = (int) quantity,
-                Store_id = product.Store_id
+                Store_id = product.Store_id,
+                Image_url = product.Image_url
             };
                 
             Chat.OrderProducts.Add(product_to_add);

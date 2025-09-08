@@ -172,6 +172,7 @@ public class Function
         string? store_id = chat.OrderProducts.Count > 0 ? chat.OrderProducts[0].Store_id : null;
         
         context.Logger.LogInformation($"Store ID: {store_id}");
+        context.Logger.LogInformation($"Products in order {JsonSerializer.Serialize(chat.OrderProducts)}");
 
         return new MessageResponse
         {
